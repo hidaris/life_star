@@ -1,7 +1,7 @@
 /*global require, module*/
 var express = require('express'),
-    DavHandler = require('jsDAV/lib/DAV/handler').jsDAV_Handler,
-    FsTree = require('jsDAV/lib/DAV/tree/filesystem').jsDAV_Tree_Filesystem,
+    DavHandler = require('jsDAV/lib/DAV/handler'),
+    FsTree = require('jsDAV/lib/DAV/backends/fs/tree'),
     defaultPlugins = require("jsDAV/lib/DAV/server").DEFAULT_PLUGINS,
     log4js = require('log4js'),
     proxy = require('./lib/proxy'),
@@ -124,7 +124,7 @@ module.exports = function serverSetup(config) {
   // -=-=-=-=-=-
   // set up DAV
   // -=-=-=-=-=-
-  srv.tree = new FsTree(config.srvOptions.node);
+  srv.tree = FsTree.new(config.srvOptions.node);
   srv.tmpDir = './tmp'; // httpPut writes tmp files
   srv.options = {};
   // for showing dir contents
