@@ -1,7 +1,7 @@
 /*global exports, require, JSON, __dirname, console*/
 
 // continously run with:
-// nodemon nodeunit tests/workspace-test.js
+// nodemon nodeunit tests/subservers-test.js
 
 var testHelper = require('./test-helper'),
     http = require('http'),
@@ -21,6 +21,15 @@ function cleanupTempFiles() {
         fs.unlinkSync(file);
     });
     tempFiles = [];
+}
+
+function createSubserverFile(path) {
+    var simpleServerSource = "module.exports = function(baseRoute, app) {\n"
+                           + "    app.get(baseRoute, function(req, res) {\n"
+                           + "        res.send('hello');\n"
+                           + "    });\n"
+                           + "}\n";
+    createTempFile(path, simpleServerSource);
 }
 
 testSuite.SubserverTest = {
@@ -44,12 +53,7 @@ testSuite.SubserverTest = {
     },
 
     "server placed in subserver dir is started and accessible": function(test) {
-        var simpleServerSource = "module.exports = function(baseRoute, app) {\n"
-                               + "    app.get(baseRoute, function(req, res) {\n"
-                               + "        res.send('hello');\n"
-                               + "    });\n"
-                               + "}\n";
-        createTempFile(__dirname + '/../subservers/foo.js', simpleServerSource);
+        createSubserverFile(__dirname + '/../subservers/foo.js');
         lifeStarTest.withLifeStarDo(test, function() {
             http.get('http://localhost:9999/nodejs/foo/', function(res) {
                 var data = "";
@@ -61,6 +65,20 @@ testSuite.SubserverTest = {
                 })
             });
         })
+    },
+
+    "subservers via options are started": function(test) {
+        createSubserverFile(__dirname + '/foo.js');
+        lifeStarTest.withLifeStarDo(test, function() {
+            http.get('http://localhost:9999/nodejs/bar/', function(res) {
+                var data = "";
+                res.on('data', function(d) { data += d; })
+                res.on('end', function(err) {
+                    test.equals('hello', data);
+                    test.done();
+                })
+            });
+        }, {subservers: {bar: __dirname + '/foo.js'}});
     }
 
 }

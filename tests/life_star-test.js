@@ -3,9 +3,12 @@
 var lifeStar = require("./../life_star"),
     server;
 
-function withLifeStarDo(test, func) {
+function withLifeStarDo(test, func, options) {
     if (server) test.assert(false, 'life_star already running!')
-    server = lifeStar({host: 'localhost', port: 9999});
+    options = options || {};
+    options.host = options.host || 'localhost';
+    options.port = options.port || 9999;
+    server = lifeStar(options);
     server.on('error', function(e) {
         test.ifError(e);
         test.done();

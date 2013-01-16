@@ -26,6 +26,7 @@ module.exports = function serverSetup(config) {
   config.enableSSL           = config.enableSSL && config.sslServerKey && config.sslServerCert && config.sslCACert;
   config.enableSSLClientAuth = config.enableSSL && config.enableSSLClientAuth;
   config.behindProxy         = config.behindProxy || false;
+  config.subservers          = config.subservers || {};
 
   var app = express(), srv;
 
@@ -119,7 +120,7 @@ module.exports = function serverSetup(config) {
   // -=-=-=-=-=-=-=-
   // setup subserver
   // -=-=-=-=-=-=-=-
-  new SubserverHandler({baseURL: '/nodejs/'}).registerWith(app);
+  new SubserverHandler({baseURL: '/nodejs/', additionalSubservers: config.subservers}).registerWith(app);
 
   // -=-=-=-=-=-
   // set up DAV
