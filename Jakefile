@@ -7,5 +7,5 @@ task('default', ['install-core'], function(params) {
 
 desc('install Lively Kernel core files from GitHub');
 task('install-core', [], function(params) {
-  exec('git clone git@github.com:rksm/LivelyKernel.git');
+  exec('git clone git@github.com:LivelyKernel/LivelyKernel.git');
 });
