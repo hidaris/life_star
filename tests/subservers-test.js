@@ -9,27 +9,13 @@ var testHelper = require('./test-helper'),
     testSuite = {},
     fs = require('fs');
 
-var tempFiles = [], tempDirs = [];
-function createTempFile(filename, content) {
-    fs.writeFileSync(filename, content);
-    tempFiles.push(filename);
-    console.log('created ' + filename);
-}
-
-function cleanupTempFiles() {
-    tempFiles.forEach(function(file) {
-        fs.unlinkSync(file);
-    });
-    tempFiles = [];
-}
-
 function createSubserverFile(path) {
     var simpleServerSource = "module.exports = function(baseRoute, app) {\n"
                            + "    app.get(baseRoute, function(req, res) {\n"
                            + "        res.send('hello');\n"
                            + "    });\n"
                            + "}\n";
-    createTempFile(path, simpleServerSource);
+    lifeStarTest.createTempFile(path, simpleServerSource);
 }
 
 testSuite.SubserverTest = {
@@ -39,7 +25,7 @@ testSuite.SubserverTest = {
     },
 
     tearDown: function(run) {
-        cleanupTempFiles();
+        lifeStarTest.cleanupTempFiles();
         lifeStarTest.shutDownLifeStar(run);
     },
 

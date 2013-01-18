@@ -27,6 +27,7 @@ module.exports = function serverSetup(config) {
   config.enableSSLClientAuth = config.enableSSL && config.enableSSLClientAuth;
   config.behindProxy         = config.behindProxy || false;
   config.subservers          = config.subservers || {};
+  config.useManifestCaching  = config.useManifestCaching || (config.useManifestCaching === undefined);
 
   var app = express(), srv;
 
@@ -134,10 +135,36 @@ module.exports = function serverSetup(config) {
   if (!srv.baseUri) srv.baseUri = '/';
   if (!srv.getBaseUri) srv.getBaseUri = function() { return this.baseUri };
 
+  function addManifestRef(req, res) {
+    if (!(/\.html$/.test(req.url)) || req.method.toLowerCase() !== 'get') return;
+    var interceptedHeaders, interceptedHeadersCode,
+        writeFunc = res.write,
+        writeHeadFunc = res.writeHead;
+    res.writeHead = function(code, headers) {
+      interceptedHeaders = headers;
+      interceptedHeadersCode = code;
+      if (code >= 400) {
+        writeHeadFunc.call(this, code, headers);
+      }
+    }
+    res.write = function(data) {
+      if (interceptedHeadersCode >= 400) {
+        return writeFunc.call(this, data);
+      }
+      var s = data.toString();
+      s = s.replace(/<html>/, '<html manifest="lively.scriptscache">');
+      interceptedHeaders['content-length'] = s.length;
+      writeHeadFunc.call(this, interceptedHeadersCode, interceptedHeaders);
+      return writeFunc.call(this, s);
+    }
+  }
+
+
   function fileHandler(req, res) {
     if (req.url.match(/\?\d+/)) {
       req.url = req.url.replace(/\?.*/, ''); // only the bare file name
     }
+    if (config.useManifestCaching) addManifestRef(req, res);
     new DavHandler(srv, req, res);
   };
 

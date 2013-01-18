@@ -1,6 +1,7 @@
 /*global module, console, setTimeout*/
 
 var lifeStar = require("./../life_star"),
+    fs = require('fs'),
     server;
 
 function withLifeStarDo(test, func, options) {
@@ -25,7 +26,22 @@ function shutDownLifeStar(thenDo) {
     });
 }
 
+var tempFiles = [], tempDirs = [];
+function createTempFile(filename, content) {
+    fs.writeFileSync(filename, content);
+    tempFiles.push(filename);
+    console.log('created ' + filename);
+}
+
+function cleanupTempFiles() {
+    tempFiles.forEach(function(file) { fs.unlinkSync(file); });
+    tempFiles = [];
+}
+
+
 module.exports = {
     withLifeStarDo: withLifeStarDo,
-    shutDownLifeStar: shutDownLifeStar
+    shutDownLifeStar: shutDownLifeStar,
+    createTempFile: createTempFile,
+    cleanupTempFiles: cleanupTempFiles
 }
