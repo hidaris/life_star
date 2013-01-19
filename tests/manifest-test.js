@@ -10,13 +10,33 @@ var testHelper = require('./test-helper'),
     fs = require('fs');
 
 function createSimpleHTML() {
-  var source = "<!DOCTYPE html>\n"
-             + "<html>\n"
-             + "  <head><title>Foo</title></head>\n"
-             + "  <body>Test</body>\n"
-             + "</html>\n"
-             + "\n";
-  lifeStarTest.createTempFile(__dirname + '/simple.html', source);
+  lifeStarTest.createDirStructure(__dirname, {
+    "simple.html": "<!DOCTYPE html>\n"
+                 + "<html>\n"
+                 + "  <head><title>Foo</title></head>\n"
+                 + "  <body>Test</body>\n"
+                 + "</html>\n"
+                 + "\n"
+  });
+}
+
+function createDirectoryWithVariousFiles() {
+  lifeStarTest.createDirStructure(__dirname, {
+    testDir: {
+      "file1.js": "//Some code in here\nalert('1');",
+      "foo": {
+        "file2.js": "//Some code in here\nalert('2');",
+        "bar": {
+          "file3.js": "//Some code in here\nalert('3');",
+          "simple.html": "<!DOCTYPE html>\n"
+                       + "<html>\n"
+                       + "  <head><title>Foo</title></head>\n"
+                       + "  <body>simple</body>\n"
+                       + "</html>\n"
+        }
+      }
+    }
+  });
 }
 
 testSuite.SubserverTest = {
@@ -26,8 +46,9 @@ testSuite.SubserverTest = {
   },
 
   tearDown: function(run) {
-    lifeStarTest.cleanupTempFiles();
-    lifeStarTest.shutDownLifeStar(run);
+    lifeStarTest.cleanupTempFiles(function() {
+      lifeStarTest.shutDownLifeStar(run);
+    });
   },
 
   "life star is embedding manifest ref in html": function(test) {
@@ -35,9 +56,7 @@ testSuite.SubserverTest = {
     lifeStarTest.withLifeStarDo(test, function() {
       http.get('http://localhost:9999/simple.html', function(res) {
         test.equals(200, res.statusCode);
-        var data = "";
-        res.on('data', function(d) { data += d; })
-        res.on('end', function(err) {
+        lifeStarTest.withResponseBodyDo(res, function(err, data) {
           test.ok(/<html manifest="lively.scriptscache">/.test(data),
                   'No manifest ref in ' + data);
           test.done();
@@ -51,12 +70,10 @@ testSuite.SubserverTest = {
     lifeStarTest.withLifeStarDo(test, function() {
       http.get('http://localhost:9999/simple.html', function(res) {
         test.equals(200, res.statusCode);
-        var data = "";
-        res.on('data', function(d) { data += d; })
-        res.on('end', function(err) {
+        lifeStarTest.withResponseBodyDo(res, function(err, data) {
           test.ok(/<html>/.test(data), 'Manifest unexpectedly in ' + data);
           test.done();
-        });
+        })
       });
     }, {fsNode: __dirname + '/', useManifestCaching: false});
   },
@@ -67,7 +84,27 @@ testSuite.SubserverTest = {
         test.equals(404, res.statusCode);
         test.done();
       });
-    }, {fsNode: __dirname + '/'})
+    }, {fsNode: __dirname + '/'});
+  },
+
+  "serve manifest file with all js scripts in a dir": function(test) {
+    createDirectoryWithVariousFiles();
+    lifeStarTest.withLifeStarDo(test, function() {
+      http.get('http://localhost:9999/lively.scriptscache', function(res) {
+        test.equals(200, res.statusCode);
+        test.equals('no-cache, private', res.headers['cache-control']);
+        test.equals('text/cache-manifest', res.headers['content-type']);
+        lifeStarTest.withResponseBodyDo(res, function(err, body) {
+          var expected = "CACHE MANIFEST\n"
+                       + "# version\n\n"
+                       + "/file1.js\n"
+                       + "/foo/bar/file3.js\n"
+                       + "/foo/file2.js\n";
+          test.equals(expected, body);
+          test.done();
+        });
+      });
+    }, {fsNode: __dirname + '/testDir'});
   }
 
 }

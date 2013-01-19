@@ -10,6 +10,7 @@ var express = require('express'),
     WorkspaceHandler = require('./lib/workspace').WorkspaceHandler,
     SubserverHandler = require('./lib/subservers').SubserverHandler,
     spawn = require('child_process').spawn,
+    exec = require('child_process').exec,
     fs = require('fs'),
     path = require('path');
 
@@ -123,6 +124,36 @@ module.exports = function serverSetup(config) {
   // -=-=-=-=-=-=-=-
   new SubserverHandler({baseURL: '/nodejs/', additionalSubservers: config.subservers}).registerWith(app);
 
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+  // manifest related -- manifest files are used by web browsers to cache
+  // files
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+  var manifestFileName = "lively.scriptscache";
+  if (config.useManifestCaching) {
+
+    var rootDir = config.fsNode;
+    function findJSFilesForManifest(thenDo) {
+      exec('find . -type f -iname "*.js" -print', {cwd: rootDir}, function(code, out, err) {
+        thenDo(code, out);
+      });
+    }
+
+    app.get('/' + manifestFileName, function(req, res) {
+      // res.type('text/cache-manifest');
+      findJSFilesForManifest(function(err, filesString) {
+        if (err) {
+          res.status(500).send('');
+          return;
+        }
+        filesString = filesString.replace(/\.\//g, '/');
+        res.set({
+          'Content-Type': 'text/cache-manifest',
+          'Cache-Control': 'no-cache, private'
+        });
+        res.send("CACHE MANIFEST\n# version\n\n" + filesString);
+      });
+    });
+  }
   // -=-=-=-=-=-
   // set up DAV
   // -=-=-=-=-=-
@@ -152,7 +183,7 @@ module.exports = function serverSetup(config) {
         return writeFunc.call(this, data);
       }
       var s = data.toString();
-      s = s.replace(/<html>/, '<html manifest="lively.scriptscache">');
+      s = s.replace(/<html>/, '<html manifest="' + manifestFileName + '">');
       interceptedHeaders['content-length'] = s.length;
       writeHeadFunc.call(this, interceptedHeadersCode, interceptedHeaders);
       return writeFunc.call(this, s);
