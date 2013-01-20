@@ -89,6 +89,7 @@ testSuite.SubserverTest = {
 
   "serve manifest file with all js scripts in a dir": function(test) {
     createDirectoryWithVariousFiles();
+    var creationTime = Math.round(Date.now() / 1000);
     lifeStarTest.withLifeStarDo(test, function() {
       http.get('http://localhost:9999/lively.scriptscache', function(res) {
         test.equals(200, res.statusCode);
@@ -96,10 +97,13 @@ testSuite.SubserverTest = {
         test.equals('text/cache-manifest', res.headers['content-type']);
         lifeStarTest.withResponseBodyDo(res, function(err, body) {
           var expected = "CACHE MANIFEST\n"
-                       + "# version\n\n"
+                       + "# timestamp " + creationTime + "\n\n\n"
+                       + "CACHE:\n"
                        + "/file1.js\n"
                        + "/foo/bar/file3.js\n"
-                       + "/foo/file2.js\n";
+                       + "/foo/file2.js\n\n\n"
+                       + 'NETWORK:\n'
+                       + '*\n*\nhttp://*\nhttps://*\n';
           test.equals(expected, body);
           test.done();
         });
