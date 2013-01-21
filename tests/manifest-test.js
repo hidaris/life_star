@@ -59,7 +59,7 @@ testSuite.SubserverTest = {
       http.get('http://localhost:9999/simple.html', function(res) {
         test.equals(200, res.statusCode);
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
-          test.ok(/<html manifest="\/lively.scriptscache">/.test(data),
+          test.ok(/<html manifest="\/lively.appcache">/.test(data),
                   'No manifest ref in ' + data);
           test.done();
         });
@@ -93,7 +93,7 @@ testSuite.SubserverTest = {
     createDirectoryWithVariousFiles();
     var creationTime = Math.floor(Date.now() / 1000);
     lifeStarTest.withLifeStarDo(test, function() {
-      http.get('http://localhost:9999/lively.scriptscache', function(res) {
+      http.get('http://localhost:9999/lively.appcache', function(res) {
         test.equals(200, res.statusCode);
         test.equals('no-cache, private', res.headers['cache-control']);
         test.equals('text/cache-manifest', res.headers['content-type']);
