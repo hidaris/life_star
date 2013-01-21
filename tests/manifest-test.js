@@ -59,7 +59,7 @@ testSuite.SubserverTest = {
       http.get('http://localhost:9999/simple.html', function(res) {
         test.equals(200, res.statusCode);
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
-          test.ok(/<html manifest="lively.scriptscache">/.test(data),
+          test.ok(/<html manifest="\/lively.scriptscache">/.test(data),
                   'No manifest ref in ' + data);
           test.done();
         });
@@ -105,7 +105,7 @@ testSuite.SubserverTest = {
                        + "/foo/bar/file3.js\n"
                        + "/foo/file2.js\n\n\n"
                        + 'NETWORK:\n'
-                       + '*\n*\nhttp://*\nhttps://*\n';
+                       + '*\nhttp://*\nhttps://*\n';
           test.equals(expected, body);
           test.done();
         });
