@@ -52,6 +52,8 @@ testSuite.SubserverTest = {
   },
 
   "life star is embedding manifest ref in html": function(test) {
+    // patch html so that the html manifest attribute is added and points to
+    // the manifest file
     createSimpleHTML();
     lifeStarTest.withLifeStarDo(test, function() {
       http.get('http://localhost:9999/simple.html', function(res) {
@@ -89,7 +91,7 @@ testSuite.SubserverTest = {
 
   "serve manifest file with all js scripts in a dir": function(test) {
     createDirectoryWithVariousFiles();
-    var creationTime = Math.round(Date.now() / 1000);
+    var creationTime = Math.floor(Date.now() / 1000);
     lifeStarTest.withLifeStarDo(test, function() {
       http.get('http://localhost:9999/lively.scriptscache', function(res) {
         test.equals(200, res.statusCode);
