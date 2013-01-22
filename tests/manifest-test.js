@@ -24,8 +24,12 @@ function createDirectoryWithVariousFiles() {
   lifeStarTest.createDirStructure(__dirname, {
     testDir: {
       "file1.js": "//Some code in here\nalert('1');",
+      "dont-cache.txt": "shouldn't be cached",
+      "but.css": "body {\ncolor: red\n}",
+      "favicon.ico": "also the icon",
       "foo": {
         "file2.js": "//Some code in here\nalert('2');",
+        "someimage.png": "images are cached as well",
         "bar": {
           "file3.js": "//Some code in here\nalert('3');",
           "simple.html": "<!DOCTYPE html>\n"
@@ -101,12 +105,15 @@ testSuite.SubserverTest = {
           var expected = "CACHE MANIFEST\n"
                        + "# timestamp " + creationTime + "\n\n\n"
                        + "CACHE:\n"
+                       + "/but.css\n"
+                       + "/favicon.ico\n"
                        + "/file1.js\n"
                        + "/foo/bar/file3.js\n"
-                       + "/foo/file2.js\n\n\n"
+                       + "/foo/file2.js\n"
+                       + "/foo/someimage.png\n\n\n"
                        + 'NETWORK:\n'
                        + '*\nhttp://*\nhttps://*\n';
-          test.equals(expected, body);
+          test.equals(expected, body, "\n>>>>\n" + expected + "\n=====\n" + body + '<<<<');
           test.done();
         });
       });
