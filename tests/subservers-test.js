@@ -20,54 +20,75 @@ function createSubserverFile(path) {
 
 testSuite.SubserverTest = {
 
-    setUp: function(run) {
-        run();
-    },
+  setUp: function(run) {
+    run();
+  },
 
-    tearDown: function(run) {
-      lifeStarTest.cleanupTempFiles(function() {
-        lifeStarTest.shutDownLifeStar(run);
+  tearDown: function(run) {
+    lifeStarTest.cleanupTempFiles(function() {
+      lifeStarTest.shutDownLifeStar(run);
+    });
+  },
+
+  "life star is running": function(test) {
+    lifeStarTest.withLifeStarDo(test, function() {
+      http.get('http://localhost:9999/', function(res) {
+        test.equals(200, res.statusCode);
+        test.done();
+      })
+    })
+  },
+
+  "server placed in subserver dir is started and accessible": function(test) {
+    createSubserverFile(__dirname + '/../subservers/foo.js');
+    lifeStarTest.withLifeStarDo(test, function() {
+      http.get('http://localhost:9999/nodejs/foo/', function(res) {
+        lifeStarTest.withResponseBodyDo(res, function(err, data) {
+          test.equals('hello', data);
+          test.done();
+        });
       });
-    },
+    })
+  },
 
-    "life star is running": function(test) {
-        lifeStarTest.withLifeStarDo(test, function() {
-            http.get('http://localhost:9999/', function(res) {
-                test.equals(200, res.statusCode);
-                test.done();
-            })
-        })
-    },
+  "subservers via options are started": function(test) {
+    createSubserverFile(__dirname + '/foo.js');
+    lifeStarTest.withLifeStarDo(test, function() {
+      http.get('http://localhost:9999/nodejs/bar/', function(res) {
+        lifeStarTest.withResponseBodyDo(res, function(err, data) {
+          test.equals('hello', data);
+          test.done();
+        });
+      });
+    }, {subservers: {bar: __dirname + '/foo.js'}});
+  }
 
-    "server placed in subserver dir is started and accessible": function(test) {
-        createSubserverFile(__dirname + '/../subservers/foo.js');
-        lifeStarTest.withLifeStarDo(test, function() {
-            http.get('http://localhost:9999/nodejs/foo/', function(res) {
-                var data = "";
-                res.on('data', function(d) { data += d; })
-                res.on('end', function(err) {
-                    test.equals('hello', data);
-                    test.done();
+}
 
-                })
-            });
-        })
-    },
+testSuite.SubserverMetaTest = {
 
-    "subservers via options are started": function(test) {
-        createSubserverFile(__dirname + '/foo.js');
-        lifeStarTest.withLifeStarDo(test, function() {
-            http.get('http://localhost:9999/nodejs/bar/', function(res) {
-                var data = "";
-                res.on('data', function(d) { data += d; })
-                res.on('end', function(err) {
-                    test.equals('hello', data);
-                    test.done();
-                })
-            });
-        }, {subservers: {bar: __dirname + '/foo.js'}});
-    }
+  setUp: function(run) {
+    run();
+  },
 
+  tearDown: function(run) {
+    lifeStarTest.cleanupTempFiles(function() {
+      lifeStarTest.shutDownLifeStar(run);
+    });
+  },
+
+  "list subservers": function(test) {
+    createSubserverFile(__dirname + '/../subservers/foo.js');
+    lifeStarTest.withLifeStarDo(test, function() {
+      http.get('http://localhost:9999/nodejs/subservers', function(res) {
+        lifeStarTest.withResponseBodyDo(res, function(err, data) {
+          data = JSON.parse(data);
+          test.deepEqual([{name: 'foo'}], data, "subserver list");
+          test.done();
+        });
+      });
+    })
+  }
 }
 
 exports.testSuite = testSuite;
