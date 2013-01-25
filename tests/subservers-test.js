@@ -4,7 +4,6 @@
 // nodemon nodeunit tests/subservers-test.js
 
 var testHelper = require('./test-helper'),
-    http = require('http'),
     lifeStarTest = require("./life_star-test"),
     testSuite = {},
     fs = require('fs');
@@ -32,17 +31,17 @@ testSuite.SubserverTest = {
 
   "life star is running": function(test) {
     lifeStarTest.withLifeStarDo(test, function() {
-      http.get('http://localhost:9999/', function(res) {
+      lifeStarTest.GET('/', function(res) {
         test.equals(200, res.statusCode);
         test.done();
-      })
-    })
+      });
+    });
   },
 
   "server placed in subserver dir is started and accessible": function(test) {
     createSubserverFile(__dirname + '/../subservers/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
-      http.get('http://localhost:9999/nodejs/foo/', function(res) {
+      lifeStarTest.GET("/nodejs/foo/", function(res) {
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
           test.equals('hello', data);
           test.done();
@@ -54,7 +53,7 @@ testSuite.SubserverTest = {
   "subservers via options are started": function(test) {
     createSubserverFile(__dirname + '/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
-      http.get('http://localhost:9999/nodejs/bar/', function(res) {
+      lifeStarTest.GET('/nodejs/bar/', function(res) {
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
           test.equals('hello', data);
           test.done();
@@ -80,7 +79,7 @@ testSuite.SubserverMetaTest = {
   "list subservers": function(test) {
     createSubserverFile(__dirname + '/../subservers/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
-      http.get('http://localhost:9999/nodejs/subservers', function(res) {
+      lifeStarTest.GET('/nodejs/subservers', function(res) {
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
           data = JSON.parse(data);
           test.deepEqual([{name: 'foo'}], data, "subserver list");

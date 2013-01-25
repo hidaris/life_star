@@ -5,6 +5,7 @@ var lifeStar = require("./../life_star"),
     exec = require('child_process').exec,
     async = require('async'),
     path = require('path'),
+    http = require('http'),
     server;
 
 function withLifeStarDo(test, func, options) {
@@ -21,12 +22,11 @@ function withLifeStarDo(test, func, options) {
 }
 
 function shutDownLifeStar(thenDo) {
-  if (!server) { thenDo(); return }
-  server.close(function() {
-    server = null;
-    console.log("life_star shutdown");
+  if (!server) {
     thenDo();
-  });
+  } else {
+    server.close(function() { server = null; thenDo(); });
+  }
 }
 
 var tempFiles = [], tempDirs = [];
@@ -84,11 +84,24 @@ function withResponseBodyDo(res, callback) {
   });
 }
 
+function get(path, callback) {
+  return http.get('http://localhost:9999' + path, callback);
+}
+
+function post(path, data, callback) {
+  var req = http.request({hostname: 'localhost', port: 9999, path: path, method: "POST"}, callback);
+  if (data) req.send(data);
+  req.end();
+  return req;
+}
+
 module.exports = {
   withLifeStarDo: withLifeStarDo,
   shutDownLifeStar: shutDownLifeStar,
   createTempFile: createTempFile,
   cleanupTempFiles: cleanupTempFiles,
   createDirStructure: createDirStructure,
-  withResponseBodyDo: withResponseBodyDo
+  withResponseBodyDo: withResponseBodyDo,
+  GET: get,
+  POST: post
 }
