@@ -88,12 +88,13 @@ function get(path, callback) {
   return http.get('http://localhost:9999' + path, callback);
 }
 
-function post(path, data, callback) {
-  var req = http.request({hostname: 'localhost', port: 9999, path: path, method: "POST"}, callback);
+function request(method, path, data, callback) {
+  var req = http.request({hostname: 'localhost', port: 9999, path: path, method: method}, callback);
   if (data) req.write(typeof data === 'object' ? JSON.stringify(data) : data);
   req.end();
   return req;
 }
+
 
 module.exports = {
   withLifeStarDo: withLifeStarDo,
@@ -103,5 +104,6 @@ module.exports = {
   createDirStructure: createDirStructure,
   withResponseBodyDo: withResponseBodyDo,
   GET: get,
-  POST: post
+  PUT: request.bind(null, 'PUT'),
+  POST: request.bind(null, 'POST')
 }

@@ -5,16 +5,19 @@
 
 var testHelper = require('./test-helper'),
     lifeStarTest = require("./life_star-test"),
+    async = require('async'),
     testSuite = {},
     fs = require('fs');
 
-function createSubserverFile(path) {
-    var simpleServerSource = "module.exports = function(baseRoute, app) {\n"
-                           + "    app.get(baseRoute, function(req, res) {\n"
-                           + "        res.send('hello');\n"
-                           + "    });\n"
-                           + "}\n";
-    lifeStarTest.createTempFile(path, simpleServerSource);
+var simpleSubserverSource = "module.exports = function(baseRoute, app) {\n"
+                          + "    app.get(baseRoute, function(req, res) {\n"
+                          + "        res.send('hello');\n"
+                          + "    });\n"
+                          + "}\n";
+
+function createSubserverFile(path, source) {
+  source = source || simpleSubserverSource;
+  lifeStarTest.createTempFile(__dirname + '/../' + path, source);
 }
 
 testSuite.SubserverTest = {
@@ -39,7 +42,7 @@ testSuite.SubserverTest = {
   },
 
   "server placed in subserver dir is started and accessible": function(test) {
-    createSubserverFile(__dirname + '/../subservers/foo.js');
+    createSubserverFile('subservers/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
       lifeStarTest.GET("/nodejs/foo/", function(res) {
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
@@ -51,7 +54,7 @@ testSuite.SubserverTest = {
   },
 
   "subservers via options are started": function(test) {
-    createSubserverFile(__dirname + '/foo.js');
+    createSubserverFile('tests/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
       lifeStarTest.GET('/nodejs/bar/', function(res) {
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
@@ -59,7 +62,7 @@ testSuite.SubserverTest = {
           test.done();
         });
       });
-    }, {subservers: {bar: __dirname + '/foo.js'}});
+    }, {subservers: {bar: './../tests/foo.js'}});
   }
 
 }
@@ -77,7 +80,7 @@ testSuite.SubserverMetaTest = {
   },
 
   "list subservers": function(test) {
-    createSubserverFile(__dirname + '/../subservers/foo.js');
+    createSubserverFile('subservers/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
       lifeStarTest.GET('/nodejs/subservers', function(res) {
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
@@ -90,7 +93,7 @@ testSuite.SubserverMetaTest = {
   },
 
   "unload subserver": function(test) {
-    createSubserverFile(__dirname + '/../subservers/foo.js');
+    createSubserverFile('subservers/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
       lifeStarTest.POST('/nodejs/subservers/foo/unload', null, function(res) {
         test.equals(200, res.statusCode);
@@ -100,7 +103,40 @@ testSuite.SubserverMetaTest = {
         })
       });
     });
+  },
+
+  "get subserver source": function(test) {
+    createSubserverFile('subservers/foo.js', simpleSubserverSource);
+    lifeStarTest.withLifeStarDo(test, function() {
+      lifeStarTest.GET('/nodejs/subservers/foo/source', function(res) {
+        lifeStarTest.withResponseBodyDo(res, function(err, data) {
+          test.equals(simpleSubserverSource, data);
+          test.done();
+        });
+      });
+    });
+  },
+
+  "set subserver source": function(test) {
+    createSubserverFile('subservers/foo.js', simpleSubserverSource);
+    var newSource = "module.exports = function(baseRoute, app) {\n"
+                  + "    app.get(baseRoute, function(req, res) {\n"
+                  + "        res.send('new source');\n"
+                  + "    });\n"
+                  + "}\n";
+    lifeStarTest.withLifeStarDo(test, function() {
+      lifeStarTest.PUT('/nodejs/subservers/foo/source', newSource, function(res) {
+        test.equals(200, res.statusCode);
+        lifeStarTest.GET('/nodejs/foo/', function(res) {
+          lifeStarTest.withResponseBodyDo(res, function(err, data) {
+            test.equals('new source', data);
+            test.done();
+          });
+        });
+      });
+    });
   }
+
 }
 
 exports.testSuite = testSuite;
