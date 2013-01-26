@@ -30,9 +30,13 @@ function shutDownLifeStar(thenDo) {
 }
 
 var tempFiles = [], tempDirs = [];
+function registerTempFile(filename) {
+  tempFiles.push(filename);
+}
+
 function createTempFile(filename, content) {
   fs.writeFileSync(filename, content);
-  tempFiles.push(filename);
+  registerTempFile(filename);
   console.log('created ' + filename);
 }
 
@@ -99,6 +103,7 @@ function request(method, path, data, callback) {
 module.exports = {
   withLifeStarDo: withLifeStarDo,
   shutDownLifeStar: shutDownLifeStar,
+  registerTempFile: registerTempFile,
   createTempFile: createTempFile,
   cleanupTempFiles: cleanupTempFiles,
   createDirStructure: createDirStructure,

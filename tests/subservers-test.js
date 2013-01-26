@@ -135,6 +135,22 @@ testSuite.SubserverMetaTest = {
         });
       });
     });
+  },
+
+  "create subserver": function(test) {
+    lifeStarTest.withLifeStarDo(test, function() {
+      console.log(simpleSubserverSource)
+      lifeStarTest.PUT('/nodejs/subservers/foo/source', simpleSubserverSource, function(res) {
+        test.equals(201, res.statusCode);
+        lifeStarTest.registerTempFile(__dirname + '/../subservers/foo.js');
+        lifeStarTest.GET('/nodejs/foo/', function(res) {
+          lifeStarTest.withResponseBodyDo(res, function(err, data) {
+            test.equals('hello', data);
+            test.done();
+          });
+        });
+      });
+    });
   }
 
 }
