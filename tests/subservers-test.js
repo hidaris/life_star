@@ -17,7 +17,7 @@ var simpleSubserverSource = "module.exports = function(baseRoute, app) {\n"
 
 function createSubserverFile(path, source) {
   source = source || simpleSubserverSource;
-  lifeStarTest.createTempFile(__dirname + '/../' + path, source);
+  return lifeStarTest.createTempFile(__dirname + '/../' + path, source);
 }
 
 testSuite.SubserverTest = {
@@ -139,7 +139,6 @@ testSuite.SubserverMetaTest = {
 
   "create subserver": function(test) {
     lifeStarTest.withLifeStarDo(test, function() {
-      console.log(simpleSubserverSource)
       lifeStarTest.PUT('/nodejs/subservers/foo/source', simpleSubserverSource, function(res) {
         test.equals(201, res.statusCode);
         lifeStarTest.registerTempFile(__dirname + '/../subservers/foo.js');
@@ -148,6 +147,20 @@ testSuite.SubserverMetaTest = {
             test.equals('hello', data);
             test.done();
           });
+        });
+      });
+    });
+  },
+
+  "delete subserver": function(test) {
+    var file = createSubserverFile('subservers/foo.js');
+    lifeStarTest.withLifeStarDo(test, function() {
+      lifeStarTest.DEL('/nodejs/subservers/foo', function(res) {
+        test.equals(200, res.statusCode, 'delete req did not work');
+        lifeStarTest.GET('/nodejs/foo/', function(res) {
+          test.equals(404, res.statusCode);
+          test.ok(!fs.existsSync(file), "subserver file not deleted");
+          test.done();
         });
       });
     });

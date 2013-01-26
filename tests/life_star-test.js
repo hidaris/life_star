@@ -38,6 +38,7 @@ function createTempFile(filename, content) {
   fs.writeFileSync(filename, content);
   registerTempFile(filename);
   console.log('created ' + filename);
+  return filename;
 }
 
 function createTempDir(dir) {
@@ -48,7 +49,11 @@ function createTempDir(dir) {
 function cleanupTempFiles(thenDo) {
   async.series(
     tempFiles.map(function(file) {
-      return function(cb) { fs.unlinkSync(file); cb(); };
+      return function(cb) {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+        else console.warn('trying to cleanup file %s but it did not exist', file);
+        cb();
+      };
     }).concat(tempDirs.map(function(dir) {
       return function(cb) {
         exec('rm -rfd ' + dir, function(code, out, err) { cb(); });
@@ -93,6 +98,7 @@ function get(path, callback) {
 }
 
 function request(method, path, data, callback) {
+  if (typeof data === 'function' && !callback) { callback = data; data = null }
   var req = http.request({hostname: 'localhost', port: 9999, path: path, method: method}, callback);
   if (data) req.write(typeof data === 'object' ? JSON.stringify(data) : data);
   req.end();
@@ -110,5 +116,6 @@ module.exports = {
   withResponseBodyDo: withResponseBodyDo,
   GET: get,
   PUT: request.bind(null, 'PUT'),
+  DEL: request.bind(null, 'DELETE'),
   POST: request.bind(null, 'POST')
 }
