@@ -108,7 +108,7 @@ testSuite.SubserverMetaTest = {
   "get subserver source": function(test) {
     createSubserverFile('subservers/foo.js', simpleSubserverSource);
     lifeStarTest.withLifeStarDo(test, function() {
-      lifeStarTest.GET('/nodejs/subservers/foo/source', function(res) {
+      lifeStarTest.GET('/nodejs/subservers/foo', function(res) {
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
           test.equals(simpleSubserverSource, data);
           test.done();
@@ -125,7 +125,7 @@ testSuite.SubserverMetaTest = {
                   + "    });\n"
                   + "}\n";
     lifeStarTest.withLifeStarDo(test, function() {
-      lifeStarTest.PUT('/nodejs/subservers/foo/source', newSource, function(res) {
+      lifeStarTest.PUT('/nodejs/subservers/foo', newSource, function(res) {
         test.equals(200, res.statusCode);
         lifeStarTest.GET('/nodejs/foo/', function(res) {
           lifeStarTest.withResponseBodyDo(res, function(err, data) {
@@ -139,7 +139,7 @@ testSuite.SubserverMetaTest = {
 
   "create subserver": function(test) {
     lifeStarTest.withLifeStarDo(test, function() {
-      lifeStarTest.PUT('/nodejs/subservers/foo/source', simpleSubserverSource, function(res) {
+      lifeStarTest.PUT('/nodejs/subservers/foo', simpleSubserverSource, function(res) {
         test.equals(201, res.statusCode);
         lifeStarTest.registerTempFile(__dirname + '/../subservers/foo.js');
         lifeStarTest.GET('/nodejs/foo/', function(res) {
