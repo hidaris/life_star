@@ -92,7 +92,7 @@ testSuite.SubserverMetaTest = {
   "unload subserver": function(test) {
     createSubserverFile(__dirname + '/../subservers/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
-      lifeStarTest.POST('/nodejs/subservers/unload', {name: 'foo'}, function(res) {
+      lifeStarTest.POST('/nodejs/subservers/foo/unload', null, function(res) {
         test.equals(200, res.statusCode);
         lifeStarTest.GET('/nodejs/foo/', function(res) {
           test.equals(404, res.statusCode);
