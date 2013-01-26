@@ -82,11 +82,24 @@ testSuite.SubserverMetaTest = {
       lifeStarTest.GET('/nodejs/subservers', function(res) {
         lifeStarTest.withResponseBodyDo(res, function(err, data) {
           data = JSON.parse(data);
-          test.deepEqual([{name: 'foo'}], data, "subserver list");
+          test.deepEqual(['foo'], data, "subserver list");
           test.done();
         });
       });
     })
+  },
+
+  "unload subserver": function(test) {
+    createSubserverFile(__dirname + '/../subservers/foo.js');
+    lifeStarTest.withLifeStarDo(test, function() {
+      lifeStarTest.POST('/nodejs/subservers/unload', {name: 'foo'}, function(res) {
+        test.equals(200, res.statusCode);
+        lifeStarTest.GET('/nodejs/foo/', function(res) {
+          test.equals(404, res.statusCode);
+          test.done();
+        })
+      });
+    });
   }
 }
 

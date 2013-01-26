@@ -90,7 +90,7 @@ function get(path, callback) {
 
 function post(path, data, callback) {
   var req = http.request({hostname: 'localhost', port: 9999, path: path, method: "POST"}, callback);
-  if (data) req.send(data);
+  if (data) req.write(typeof data === 'object' ? JSON.stringify(data) : data);
   req.end();
   return req;
 }
