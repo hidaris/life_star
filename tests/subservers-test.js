@@ -160,7 +160,13 @@ testSuite.SubserverMetaTest = {
         lifeStarTest.GET('/nodejs/foo/', function(res) {
           test.equals(404, res.statusCode);
           test.ok(!fs.existsSync(file), "subserver file not deleted");
-          test.done();
+          lifeStarTest.GET('/nodejs/subservers', function(res) {
+            lifeStarTest.withResponseBodyDo(res, function(err, data) {
+              data = JSON.parse(data);
+              test.ok(data.indexOf('foo') === -1, "subserver foo still in list");
+              test.done();
+            });
+          });
         });
       });
     });
