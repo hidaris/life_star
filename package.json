@@ -14,5 +14,6 @@
   "devDependencies": {
     "nodeunit": ""
   },
-  "main": "life_star"
+  "main": "life_star",
+  "scripts": { "test": "nodeunit tests/*-test.js" }
 }
