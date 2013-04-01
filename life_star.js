@@ -27,6 +27,7 @@ module.exports = function serverSetup(config) {
   config.enableSSLClientAuth = config.enableSSL && config.enableSSLClientAuth;
   config.behindProxy         = config.behindProxy || false;
   config.subservers          = config.subservers || {};
+  config.subserverDirectory  = config.subserverDirectory || __dirname  + "/subservers/";
   config.useManifestCaching  = config.useManifestCaching || (config.useManifestCaching === undefined);
 
   var app = express(), srv;
@@ -121,7 +122,11 @@ module.exports = function serverSetup(config) {
   // -=-=-=-=-=-=-=-
   // setup subserver
   // -=-=-=-=-=-=-=-
-  new SubserverHandler({baseURL: '/nodejs/', additionalSubservers: config.subservers}).registerWith(app, srv);
+  new SubserverHandler({
+    baseURL: '/nodejs/',
+    subserverDirectory: config.subserverDirectory,
+    additionalSubservers: config.subservers
+  }).registerWith(app, srv);
 
   // -=-=-=-=-=-=-=-=-=-=-
   // manifest file related
