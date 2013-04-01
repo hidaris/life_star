@@ -5,7 +5,7 @@
 
 var testHelper = require('./test-helper'),
     http = require('http'),
-    lifeStarTest = require("./life_star-test"),
+    lifeStarTest = require("./life_star-test-support"),
     testSuite = {},
     fs = require('fs');
 

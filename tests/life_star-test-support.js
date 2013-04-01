@@ -25,7 +25,9 @@ function shutDownLifeStar(thenDo) {
   if (!server) {
     thenDo();
   } else {
-    server.close(function() { server = null; thenDo(); });
+    console.log('shuting down server...');
+    debugger;
+    server.close(function() { console.log('... done'); server = null; thenDo(); });
   }
 }
 
@@ -93,18 +95,22 @@ function withResponseBodyDo(res, callback) {
   });
 }
 
-function get(path, callback) {
-  return http.get('http://localhost:9999' + path, callback);
-}
-
 function request(method, path, data, callback) {
   if (typeof data === 'function' && !callback) { callback = data; data = null }
-  var req = http.request({hostname: 'localhost', port: 9999, path: path, method: method}, callback);
+  var req = http.request({
+    hostname: "localhost",
+    port: 9999,
+    path: path,
+    method: method
+  }, function(res) {
+    var data = '';
+    res.on('data', function(d) { data += d.toString(); });
+    res.on('end', function() { res.body = data; callback && callback(res); });
+  });
   if (data) req.write(typeof data === 'object' ? JSON.stringify(data) : data);
   req.end();
   return req;
 }
-
 
 module.exports = {
   withLifeStarDo: withLifeStarDo,
@@ -114,7 +120,7 @@ module.exports = {
   cleanupTempFiles: cleanupTempFiles,
   createDirStructure: createDirStructure,
   withResponseBodyDo: withResponseBodyDo,
-  GET: get,
+  GET: request.bind(null, 'GET'),
   PUT: request.bind(null, 'PUT'),
   DEL: request.bind(null, 'DELETE'),
   POST: request.bind(null, 'POST')

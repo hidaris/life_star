@@ -4,7 +4,7 @@
 // nodemon nodeunit tests/subservers-test.js
 
 var testHelper = require('./test-helper'),
-    lifeStarTest = require("./life_star-test"),
+    lifeStarTest = require("./life_star-test-support"),
     async = require('async'),
     testSuite = {},
     fs = require('fs');
@@ -34,10 +34,7 @@ testSuite.SubserverTest = {
 
   "life star is running": function(test) {
     lifeStarTest.withLifeStarDo(test, function() {
-      lifeStarTest.GET('/', function(res) {
-        test.equals(200, res.statusCode);
-        test.done();
-      });
+      test.done();
     });
   },
 
@@ -45,10 +42,8 @@ testSuite.SubserverTest = {
     createSubserverFile('subservers/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
       lifeStarTest.GET("/nodejs/foo/", function(res) {
-        lifeStarTest.withResponseBodyDo(res, function(err, data) {
-          test.equals('hello', data);
-          test.done();
-        });
+        test.equals('hello', res.body);
+        test.done();
       });
     })
   },
@@ -57,10 +52,9 @@ testSuite.SubserverTest = {
     createSubserverFile('tests/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
       lifeStarTest.GET('/nodejs/bar/', function(res) {
-        lifeStarTest.withResponseBodyDo(res, function(err, data) {
-          test.equals('hello', data);
-          test.done();
-        });
+        test.equals('hello', res.body);
+        test.done();
+
       });
     }, {subservers: {bar: './../tests/foo.js'}});
   }
@@ -83,11 +77,8 @@ testSuite.SubserverMetaTest = {
     createSubserverFile('subservers/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
       lifeStarTest.GET('/nodejs/subservers', function(res) {
-        lifeStarTest.withResponseBodyDo(res, function(err, data) {
-          data = JSON.parse(data);
-          test.deepEqual(['foo'], data, "subserver list");
+          test.deepEqual(['foo'], JSON.parse(res.body), "subserver list");
           test.done();
-        });
       });
     })
   },
@@ -96,11 +87,13 @@ testSuite.SubserverMetaTest = {
     createSubserverFile('subservers/foo.js');
     lifeStarTest.withLifeStarDo(test, function() {
       lifeStarTest.POST('/nodejs/subservers/foo/unload', null, function(res) {
+        var data = '';
         test.equals(200, res.statusCode);
         lifeStarTest.GET('/nodejs/foo/', function(res) {
           test.equals(404, res.statusCode);
           test.done();
         })
+
       });
     });
   },
@@ -109,10 +102,9 @@ testSuite.SubserverMetaTest = {
     createSubserverFile('subservers/foo.js', simpleSubserverSource);
     lifeStarTest.withLifeStarDo(test, function() {
       lifeStarTest.GET('/nodejs/subservers/foo', function(res) {
-        lifeStarTest.withResponseBodyDo(res, function(err, data) {
-          test.equals(simpleSubserverSource, data);
-          test.done();
-        });
+        test.equals(simpleSubserverSource, res.body);
+        test.done();
+
       });
     });
   },
@@ -128,10 +120,9 @@ testSuite.SubserverMetaTest = {
       lifeStarTest.PUT('/nodejs/subservers/foo', newSource, function(res) {
         test.equals(200, res.statusCode);
         lifeStarTest.GET('/nodejs/foo/', function(res) {
-          lifeStarTest.withResponseBodyDo(res, function(err, data) {
-            test.equals('new source', data);
-            test.done();
-          });
+          test.equals('new source', res.body);
+          test.done();
+
         });
       });
     });
@@ -143,10 +134,9 @@ testSuite.SubserverMetaTest = {
         test.equals(201, res.statusCode);
         lifeStarTest.registerTempFile(__dirname + '/../subservers/foo.js');
         lifeStarTest.GET('/nodejs/foo/', function(res) {
-          lifeStarTest.withResponseBodyDo(res, function(err, data) {
-            test.equals('hello', data);
-            test.done();
-          });
+          test.equals('hello', res.body);
+          test.done();
+
         });
       });
     });
@@ -161,11 +151,8 @@ testSuite.SubserverMetaTest = {
           test.equals(404, res.statusCode);
           test.ok(!fs.existsSync(file), "subserver file not deleted");
           lifeStarTest.GET('/nodejs/subservers', function(res) {
-            lifeStarTest.withResponseBodyDo(res, function(err, data) {
-              data = JSON.parse(data);
-              test.ok(data.indexOf('foo') === -1, "subserver foo still in list");
-              test.done();
-            });
+            test.ok(JSON.parse(res.body).indexOf('foo') === -1, "subserver foo still in list");
+            test.done();
           });
         });
       });
