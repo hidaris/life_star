@@ -98,20 +98,27 @@ testSuite.ManifestTest = {
         test.equals(200, res.statusCode);
         test.equals('no-cache, private', res.headers['cache-control']);
         test.equals('text/cache-manifest', res.headers['content-type']);
-        var expected = "CACHE MANIFEST\n"
-                     + "# timestamp " + creationTime + "\n\n\n"
-                     + "CACHE:\n"
-                     + "/but.css\n"
-                     + "/favicon.ico\n"
-                     + "/file1.js\n"
-                     + "/foo/bar/file3.js\n"
-                     + "/foo/file2.js\n"
-                     + "/foo/someimage.png\n\n\n"
-                     + 'NETWORK:\n'
-                     + '*\nhttp://*\nhttps://*\n';
-        test.equals(expected, res.body, "\n>>>>\n" + expected + "\n=====\n" + res.body + '<<<<');
+        var expectedFirst = "CACHE MANIFEST\n"
+                          + "# timestamp " + creationTime + "\n\n\n",
+            // since find sorting can differ between OSes
+            expectedSecond = ["CACHE:",
+                              "/but.css",
+                              "/favicon.ico",
+                              "/file1.js",
+                              "/foo/bar/file3.js",
+                              "/foo/file2.js",
+                              "/foo/someimage.png"].sort().join('\n'),
+            expectedThird = "\n\n\n"
+                          + 'NETWORK:\n'
+                          + '*\nhttp://*\nhttps://*\n',
+            s = res.body,
+            first = s.slice(0, s.indexOf('CACHE:')),
+            second = s.slice(s.indexOf('CACHE:'), s.indexOf('\n\n\nNETWORK:')).split('\n').sort().join('\n'),
+            third = s.slice(s.indexOf('\n\n\nNETWORK:'));
+        test.equals(expectedFirst, first, "\n>>>>\n" + expectedFirst + "\n=====\n" + first + '<<<<');
+        test.equals(expectedSecond, second, "\n>>>>\n" + expectedSecond + "\n=====\n" + second + '<<<<');
+        test.equals(expectedThird, third, "\n>>>>\n" + expectedThird + "\n=====\n" + third + '<<<<');
         test.done();
-
       });
     }, {fsNode: __dirname + '/testDir'});
   }
