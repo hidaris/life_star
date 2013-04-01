@@ -9,6 +9,7 @@ var express = require('express'),
     auth = require('./lib/auth'),
     WorkspaceHandler = require('./lib/workspace').WorkspaceHandler,
     SubserverHandler = require('./lib/subservers').SubserverHandler,
+    WebsocketHandler = require('./lib/websocket').WebsocketHandler,
     ManifestHandler = require('./lib/manifest').ManifestHandler,
     spawn = require('child_process').spawn,
     fs = require('fs');
@@ -113,6 +114,11 @@ module.exports = function serverSetup(config) {
   // -=-=-=-=-=-
   if (config.enableTesting) { testing(app, logger); };
 
+
+  // -=-=-=-=-=-=-=-=-
+  // websocket support
+  // -=-=-=-=-=-=-=-=-
+  new WebsocketHandler().registerWith(app, srv);
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   // setup workspace handler / routes
