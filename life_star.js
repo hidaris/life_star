@@ -12,9 +12,12 @@ var express = require('express'),
     WebsocketHandler = require('./lib/websocket').WebsocketHandler,
     ManifestHandler = require('./lib/manifest').ManifestHandler,
     spawn = require('child_process').spawn,
-    fs = require('fs');
+    util = require('util'),
+    fs = require('fs'),
+    EventEmitter = require('events').EventEmitter,
+    server, app;
 
-module.exports = function serverSetup(config) {
+var serverSetup = module.exports = function(config) {
 
   config.host                = config.host || "localhost";
   config.port                = config.port || 9001;
@@ -31,7 +34,7 @@ module.exports = function serverSetup(config) {
   config.subserverDirectory  = config.subserverDirectory || __dirname  + "/subservers/";
   config.useManifestCaching  = config.useManifestCaching || (config.useManifestCaching === undefined);
 
-  var app = express(), srv;
+  app = express();
 
   if (config.enableSSL) {
     var https = require('https'),
@@ -51,9 +54,9 @@ module.exports = function serverSetup(config) {
           // the route specified.
           rejectUnauthorized: config.enableSSLClientAuth
         }
-    srv = require('https').createServer(options, app);
+    server = require('https').createServer(options, app);
   } else {
-    srv = require('http').createServer(app);
+    server = require('http').createServer(app);
   }
 
   // express specifically handles the case of sitting behind a proxy, see
@@ -118,12 +121,12 @@ module.exports = function serverSetup(config) {
   // -=-=-=-=-=-=-=-=-
   // websocket support
   // -=-=-=-=-=-=-=-=-
-  new WebsocketHandler().registerWith(app, srv);
+  new WebsocketHandler().registerWith(app, server);
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   // setup workspace handler / routes
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-  new WorkspaceHandler({}, config.srvOptions.node).registerWith(app, srv);
+  new WorkspaceHandler({}, config.srvOptions.node).registerWith(app, server);
 
   // -=-=-=-=-=-=-=-
   // setup subserver
@@ -132,32 +135,34 @@ module.exports = function serverSetup(config) {
     baseURL: '/nodejs/',
     subserverDirectory: config.subserverDirectory,
     additionalSubservers: config.subservers
-  }).registerWith(app, srv);
+  }).registerWith(app, server);
 
   // -=-=-=-=-=-=-=-=-=-=-
   // manifest file related
   // -=-=-=-=-=-=-=-=-=-=-
-  var manifestHandler = new ManifestHandler(config);
-  manifestHandler.registerWith(app, srv);
+  if (config.useManifestCaching) {
+    var manifestHandler = new ManifestHandler(config);
+    manifestHandler.registerWith(app, server);
+  }
 
   // -=-=-=-=-=-
   // set up DAV
   // -=-=-=-=-=-
-  srv.tree = FsTree.new(config.srvOptions.node);
-  srv.tmpDir = './tmp'; // httpPut writes tmp files
-  srv.options = {};
+  server.tree = FsTree.new(config.srvOptions.node);
+  server.tmpDir = './tmp'; // httpPut writes tmp files
+  server.options = {};
   // for showing dir contents
-  srv.plugins = {browser: defaultPlugins.browser};
+  server.plugins = {browser: defaultPlugins.browser};
   // https server has slightly different interface
-  if (!srv.baseUri) srv.baseUri = '/';
-  if (!srv.getBaseUri) srv.getBaseUri = function() { return this.baseUri };
+  if (!server.baseUri) server.baseUri = '/';
+  if (!server.getBaseUri) server.getBaseUri = function() { return this.baseUri };
 
   function fileHandler(req, res) {
     if (req.url.match(/\?\d+/)) {
       req.url = req.url.replace(/\?.*/, ''); // only the bare file name
     }
-    manifestHandler.addManifestRef(req, res);
-    new DavHandler(srv, req, res);
+    config.useManifestCaching && manifestHandler.addManifestRef(req, res);
+    new DavHandler(server, req, res);
   };
 
   // DAV routes
@@ -166,7 +171,16 @@ module.exports = function serverSetup(config) {
   // -=-=-=-=-
   // GO GO GO
   // -=-=-=-=-
-  srv.listen(config.port);
+  server.listen(config.port);
 
-  return srv;
+  serverSetup.emit('start', server);
+  server.on('close', function() { serverSetup.emit('close'); });
+
+  return server;
 };
+
+util._extend(serverSetup, EventEmitter.prototype);
+EventEmitter.call(serverSetup);
+
+serverSetup.getServer = function() { return server; }
+serverSetup.getApp = function() { return app; }
