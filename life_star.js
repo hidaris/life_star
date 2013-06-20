@@ -32,7 +32,7 @@ var serverSetup = module.exports = function(config) {
   config.behindProxy         = config.behindProxy || false;
   config.subservers          = config.subservers || {};
   config.subserverDirectory  = config.subserverDirectory || __dirname  + "/subservers/";
-  config.useManifestCaching  = config.useManifestCaching || (config.useManifestCaching === undefined);
+  config.useManifestCaching  = config.useManifestCaching || false;
 
   app = express();
 
