@@ -66,7 +66,7 @@ testSuite.ManifestTest = {
                 'No manifest ref in ' + res.body);
         test.done();
       });
-    }, {fsNode: __dirname + '/'});
+    }, {fsNode: __dirname + '/', useManifestCaching: true});
   },
 
   "life star is not embedding manifest ref if feature is disabled": function(test) {
@@ -87,7 +87,7 @@ testSuite.ManifestTest = {
         test.equals(404, res.statusCode);
         test.done();
       });
-    }, {fsNode: __dirname + '/'});
+    }, {fsNode: __dirname + '/', useManifestCaching: true});
   },
 
   "serve manifest file with all js scripts in a dir": function(test) {
@@ -120,7 +120,7 @@ testSuite.ManifestTest = {
         test.equals(expectedThird, third, "\n>>>>\n" + expectedThird + "\n=====\n" + third + '<<<<');
         test.done();
       });
-    }, {fsNode: __dirname + '/testDir'});
+    }, {fsNode: __dirname + '/testDir', useManifestCaching: true});
   }
 
 }
