@@ -166,13 +166,20 @@ var serverSetup = module.exports = function(config) {
   // -=-=-=-=-=--=-=-=-=-=--=-=-=-
   // set up file system connection
   // -=-=-=-=-=--=-=-=-=-=--=-=-=-
-  var fsHandler = new LivelyFsHandler({
+  var dbConf = { // defaults
       fs: config.srvOptions.node,
       excludedDirectories: ['.svn', '.git', 'node_modules'],
-      excludedFiles: [/.*\.sqlite/, /.*\.gz/],
-      dbFile: config.objectDBFile || path.join(config.fsNode, "objects.sqlite"),
+      excludedFiles: [/.*\.sqlite/, /.*\.gz/, '.DS_Store'],
+      includedFiles: /\.(cmd|conf|css|diff|el|html|ini|js|json|md|mdown|metainfo|patch|r|snippets|st|txt|xhtml|xml|yml)$/i,
+      dbFile: path.join(config.fsNode, "objects.sqlite"),
       resetDatabase: false
-  }).registerWith(app, server);
+  }
+  if (config.dbConf) {
+      if (typeof config.dbConf === 'string')
+          config.dbConf = JSON.parse(config.dbConf);
+      util._extend(dbConf, config.dbConf);
+  }
+  var fsHandler = new LivelyFsHandler(dbConf).registerWith(app, server);
   lively.server.repository = fsHandler.repository;
   app.all(/.*/, fsHandler.handleRequest.bind(fsHandler));
 
