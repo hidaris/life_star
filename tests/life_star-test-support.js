@@ -6,11 +6,12 @@ var lifeStar = require("./../life_star"),
     async = require('async'),
     path = require('path'),
     http = require('http'),
+    util = require('util'),
     server;
 
 function withLifeStarDo(test, func, options) {
   if (server) test.assert(false, 'life_star already running!')
-  options = options || {};
+  options = util._extend(options || {}, {dbConf: {enableVersioning: false}});
   options.host = options.host || 'localhost';
   options.port = options.port || 9999;
   server = lifeStar(options);

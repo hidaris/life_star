@@ -167,11 +167,12 @@ var serverSetup = module.exports = function(config) {
   // set up file system connection
   // -=-=-=-=-=--=-=-=-=-=--=-=-=-
   var dbConf = { // defaults
+      enableVersioning: true,
       fs: config.srvOptions.node,
       excludedDirectories: ['.svn', '.git', 'node_modules'],
       excludedFiles: [/.*\.sqlite/, /.*\.gz/, '.DS_Store'],
       includedFiles: [/\.(cmd|conf|css|diff|el|html|ini|js|json|md|mdown|metainfo|patch|r|snippets|st|txt|xhtml|xml|yml)$/i],
-      dbFile: path.join(config.fsNode, "objects.sqlite"),
+      dbFile: path.join(config.fsNode || '', "objects.sqlite"),
       resetDatabase: false
   }
   if (config.dbConf) {

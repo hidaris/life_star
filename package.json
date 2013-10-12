@@ -17,5 +17,5 @@
     "nodeunit": ""
   },
   "main": "life_star",
-  "scripts": { "test": "nodeunit tests/*-test.js" }
+  "scripts": { "test": "node_modules/nodeunit/bin/nodeunit tests/*-test.js" }
 }
