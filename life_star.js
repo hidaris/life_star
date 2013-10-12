@@ -1,8 +1,6 @@
 /*global require, module*/
 var express = require('express'),
-    DavHandler = require('jsDAV/lib/DAV/handler'),
-    FsTree = require('jsDAV/lib/DAV/backends/fs/tree'),
-    defaultPlugins = require("jsDAV/lib/DAV/server").DEFAULT_PLUGINS,
+    LivelyFsHandler = require('lively-davfs/request-handler'),
     log4js = require('log4js'),
     proxy = require('./lib/proxy'),
     testing = require('./lib/testing'),
@@ -14,6 +12,7 @@ var express = require('express'),
     spawn = require('child_process').spawn,
     util = require('util'),
     fs = require('fs'),
+    path = require('path'),
     EventEmitter = require('events').EventEmitter,
     server, app;
 
@@ -35,6 +34,19 @@ var serverSetup = module.exports = function(config) {
   config.useManifestCaching  = config.useManifestCaching || false;
 
   app = express();
+
+  (function createLivelyObject() {
+    // some helpers, mainly for interactive usage
+    if (typeof lively === "undefined") global.lively = {};
+    global.lv = global.lively;
+    util._extend(lively, {
+      server: {
+        dir: __dirname,
+        get lifeStar() { return server; },
+        get app() { return app; }
+      }
+     });
+  })();
 
   if (config.enableSSL) {
     var https = require('https'),
@@ -117,7 +129,6 @@ var serverSetup = module.exports = function(config) {
   // -=-=-=-=-=-
   if (config.enableTesting) { testing(app, logger); };
 
-
   // -=-=-=-=-=-=-=-=-
   // websocket support
   // -=-=-=-=-=-=-=-=-
@@ -143,30 +154,27 @@ var serverSetup = module.exports = function(config) {
   if (config.useManifestCaching) {
     var manifestHandler = new ManifestHandler(config);
     manifestHandler.registerWith(app, server);
+    app.all(/.*/, function fileHandler(req, res, next) {
+      if (req.url.match(/\?\d+/)) {
+        req.url = req.url.replace(/\?.*/, ''); // only the bare file name
+      }
+      manifestHandler.addManifestRef(req, res);
+      next();
+    });
   }
 
-  // -=-=-=-=-=-
-  // set up DAV
-  // -=-=-=-=-=-
-  server.tree = FsTree.new(config.srvOptions.node);
-  server.tmpDir = './tmp'; // httpPut writes tmp files
-  server.options = {};
-  // for showing dir contents
-  server.plugins = {browser: defaultPlugins.browser};
-  // https server has slightly different interface
-  if (!server.baseUri) server.baseUri = '/';
-  if (!server.getBaseUri) server.getBaseUri = function() { return this.baseUri };
-
-  function fileHandler(req, res) {
-    if (req.url.match(/\?\d+/)) {
-      req.url = req.url.replace(/\?.*/, ''); // only the bare file name
-    }
-    config.useManifestCaching && manifestHandler.addManifestRef(req, res);
-    new DavHandler(server, req, res);
-  };
-
-  // DAV routes
-  app.all(/.*/, fileHandler);
+  // -=-=-=-=-=--=-=-=-=-=--=-=-=-
+  // set up file system connection
+  // -=-=-=-=-=--=-=-=-=-=--=-=-=-
+  var fsHandler = new LivelyFsHandler({
+      fs: config.srvOptions.node,
+      excludedDirectories: ['.svn', '.git', 'node_modules'],
+      excludedFiles: [/.*\.sqlite/, /.*\.gz/],
+      dbFile: config.objectDBFile || path.join(config.fsNode, "objects.sqlite"),
+      resetDatabase: false
+  }).registerWith(app, server);
+  lively.server.repository = fsHandler.repository;
+  app.all(/.*/, fsHandler.handleRequest.bind(fsHandler));
 
   // -=-=-=-=-
   // GO GO GO
