@@ -1,11 +1,10 @@
 {
   "name": "life_star",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "author": "Fabian Bornhofen <fbornhofen@gmail.com>",
   "contributors": ["Robert Krahn <robert.krahn@gmail.com>"],
   "description": "Another web server for Lively",
   "dependencies": {
-    "jsDAV": "~0.3",
     "express": "3.x",
     "log4js": "0.4.1",
     "request": "~2.2",
