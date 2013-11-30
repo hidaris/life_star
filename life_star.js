@@ -5,7 +5,6 @@ var express = require('express'),
     proxy = require('./lib/proxy'),
     testing = require('./lib/testing'),
     auth = require('./lib/auth'),
-    WorkspaceHandler = require('./lib/workspace').WorkspaceHandler,
     SubserverHandler = require('./lib/subservers').SubserverHandler,
     WebsocketHandler = require('./lib/websocket').WebsocketHandler,
     ManifestHandler = require('./lib/manifest').ManifestHandler,
@@ -133,11 +132,6 @@ var serverSetup = module.exports = function(config) {
   // websocket support
   // -=-=-=-=-=-=-=-=-
   new WebsocketHandler().registerWith(app, server);
-
-  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-  // setup workspace handler / routes
-  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-  new WorkspaceHandler({}, config.srvOptions.node).registerWith(app, server);
 
   // -=-=-=-=-=-=-=-
   // setup subserver
