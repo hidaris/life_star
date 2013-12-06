@@ -8,14 +8,13 @@ var express = require('express'),
     SubserverHandler = require('./lib/subservers').SubserverHandler,
     WebsocketHandler = require('./lib/websocket').WebsocketHandler,
     ManifestHandler = require('./lib/manifest').ManifestHandler,
-    spawn = require('child_process').spawn,
     util = require('util'),
     fs = require('fs'),
     path = require('path'),
     EventEmitter = require('events').EventEmitter,
     server, app;
 
-var serverSetup = module.exports = function(config) {
+var serverSetup = module.exports = function(config, thenDo) {
 
   config.host                = config.host || "localhost";
   config.port                = config.port || 9001;
@@ -64,7 +63,7 @@ var serverSetup = module.exports = function(config) {
           // If specified as "true", no unauthenticated traffic will make it to
           // the route specified.
           rejectUnauthorized: config.enableSSLClientAuth
-        }
+        };
     server = require('https').createServer(options, app);
   } else {
     server = require('http').createServer(app);
@@ -126,7 +125,7 @@ var serverSetup = module.exports = function(config) {
   // -=-=-=-=-=-
   // test server
   // -=-=-=-=-=-
-  if (config.enableTesting) { testing(app, logger); };
+  if (config.enableTesting) testing(app, logger);
 
   // -=-=-=-=-=-=-=-=-
   // websocket support
@@ -168,7 +167,7 @@ var serverSetup = module.exports = function(config) {
       includedFiles: [/\.(cmd|conf|css|diff|el|html|ini|js|json|md|mdown|metainfo|patch|r|snippets|st|txt|xhtml|xml|yml)$/i],
       dbFile: path.join(config.fsNode || '', "objects.sqlite"),
       resetDatabase: false
-  }
+  };
   if (config.dbConf) {
       if (typeof config.dbConf === 'string')
           config.dbConf = JSON.parse(config.dbConf);
@@ -181,10 +180,14 @@ var serverSetup = module.exports = function(config) {
   // -=-=-=-=-
   // GO GO GO
   // -=-=-=-=-
-  server.listen(config.port);
-
-  serverSetup.emit('start', server);
+  server.on('listening', function() {
+      console.log("life_star running");
+      serverSetup.emit('start', server);
+      if (thenDo) thenDo(null, server);
+  });
   server.on('close', function() { serverSetup.emit('close'); });
+
+  server.listen(config.port);
 
   return server;
 };
@@ -192,5 +195,5 @@ var serverSetup = module.exports = function(config) {
 util._extend(serverSetup, EventEmitter.prototype);
 EventEmitter.call(serverSetup);
 
-serverSetup.getServer = function() { return server; }
-serverSetup.getApp = function() { return app; }
+serverSetup.getServer = function() { return server; };
+serverSetup.getApp = function() { return app; };
