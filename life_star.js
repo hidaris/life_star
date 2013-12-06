@@ -6,7 +6,6 @@ var express = require('express'),
     testing = require('./lib/testing'),
     auth = require('./lib/auth'),
     SubserverHandler = require('./lib/subservers').SubserverHandler,
-    WebsocketHandler = require('./lib/websocket').WebsocketHandler,
     ManifestHandler = require('./lib/manifest').ManifestHandler,
     util = require('util'),
     fs = require('fs'),
@@ -126,11 +125,6 @@ var serverSetup = module.exports = function(config, thenDo) {
   // test server
   // -=-=-=-=-=-
   if (config.enableTesting) testing(app, logger);
-
-  // -=-=-=-=-=-=-=-=-
-  // websocket support
-  // -=-=-=-=-=-=-=-=-
-  new WebsocketHandler().registerWith(app, server);
 
   // -=-=-=-=-=-=-=-
   // setup subserver
