@@ -157,7 +157,7 @@ var serverSetup = module.exports = function(config, thenDo) {
       enableVersioning: true,
       fs: config.srvOptions.node,
       excludedDirectories: ['.svn', '.git', 'node_modules'],
-      excludedFiles: [/.*\.sqlite/, /.*\.gz/, '.DS_Store'],
+      excludedFiles: [/.*\.sqlite/, /.*\.gz/, '.DS_Store', 'combined.js'],
       includedFiles: [/\.(cmd|conf|css|diff|el|html|ini|js|json|md|mdown|metainfo|patch|r|snippets|st|txt|xhtml|xml|yml)$/i],
       dbFile: path.join(config.fsNode || '', "objects.sqlite"),
       resetDatabase: false
