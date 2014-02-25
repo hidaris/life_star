@@ -1,6 +1,6 @@
 {
   "name": "life_star",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "author": "Fabian Bornhofen <fbornhofen@gmail.com>",
   "contributors": ["Robert Krahn <robert.krahn@gmail.com>"],
   "description": "Another web server for Lively",

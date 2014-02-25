@@ -76,9 +76,12 @@ var serverSetup = module.exports = function(config, thenDo) {
   if (config.cors) {
     console.log('Lively server started with cross origin resource sharing (CORS) enabled.');
     app.use(function cors(req, res, next) {
+      var allowedHeaders = req.header("Access-Control-Request-Headers"), // allow all headers by default
+          allowedMethods = "POST,OPTIONS,GET,HEAD,DELETE,PROPFIND,PUT,PROPPATCH,COPY,MOVE,REPORT";
       res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PROPFIND,REPORT');
-      res.header('Access-Control-Expose-Headers', 'Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma');
+      res.header('Access-Control-Allow-Methods', allowedMethods);
+      allowedHeaders && res.header('Access-Control-Expose-Headers', allowedHeaders);
+      allowedHeaders && res.header('Access-Control-Allow-Headers', allowedHeaders);
       res.header('Access-Control-Allow-Credentials', 'true');
       next();
     });
