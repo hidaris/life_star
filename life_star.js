@@ -29,6 +29,7 @@ var serverSetup = module.exports = function(config, thenDo) {
   config.subservers          = config.subservers || {};
   config.subserverDirectory  = config.subserverDirectory || __dirname  + "/subservers/";
   config.useManifestCaching  = config.useManifestCaching || false;
+  config.cors                = config.hasOwnProperty("cors") ? config.cors : true;
 
   app = express();
 
@@ -71,6 +72,17 @@ var serverSetup = module.exports = function(config, thenDo) {
   // express specifically handles the case of sitting behind a proxy, see
   // http://expressjs.com/guide.html#proxies
   if (config.behindProxy) app.enable('trust proxy');
+
+  if (config.cors) {
+    console.log('Lively server started with cross origin resource sharing (CORS) enabled.');
+    app.use(function cors(req, res, next) {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PROPFIND,REPORT');
+      res.header('Access-Control-Expose-Headers', 'Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      next();
+    });
+  }
 
   app.use(express.bodyParser());
   app.use(express.cookieParser());
