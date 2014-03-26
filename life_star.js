@@ -170,6 +170,7 @@ var serverSetup = module.exports = function(config, thenDo) {
   // -=-=-=-=-=--=-=-=-=-=--=-=-=-
   var dbConf = { // defaults
       enableVersioning: true,
+      enableRewriting: true,
       fs: config.srvOptions.node,
       excludedDirectories: ['.svn', '.git', 'node_modules'],
       excludedFiles: [/.*\.sqlite/, /.*\.gz/, '.DS_Store', 'combined.js'],
