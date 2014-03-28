@@ -1,6 +1,6 @@
 {
   "name": "life_star",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "author": "Fabian Bornhofen <fbornhofen@gmail.com>",
   "contributors": ["Robert Krahn <robert.krahn@gmail.com>"],
   "description": "Another web server for Lively",
@@ -13,6 +13,10 @@
   },
   "devDependencies": {
     "nodeunit": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LivelyKernel/life_star.git"
   },
   "main": "life_star",
   "scripts": { "test": "node_modules/nodeunit/bin/nodeunit tests/*-test.js" }
