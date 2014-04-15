@@ -11,7 +11,7 @@ var lifeStar = require("./../life_star"),
 
 function withLifeStarDo(test, func, options) {
   if (server) test.assert(false, 'life_star already running!')
-  options = util._extend(options || {}, {dbConf: {enableVersioning: false}});
+  options = util._extend(options || {}, {dbConf: {enableVersioning: false, enableRewriting: false}});
   options.host = options.host || 'localhost';
   options.port = options.port || 9999;
   server = lifeStar(options);
