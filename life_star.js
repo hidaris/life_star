@@ -87,7 +87,7 @@ var serverSetup = module.exports = function(config, thenDo) {
     });
   }
 
-  app.use(express.bodyParser());
+  app.use(express.bodyParser({limit: '150mb'}));
   app.use(express.cookieParser());
 
   // store auth information into a cookie
