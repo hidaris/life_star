@@ -97,7 +97,7 @@ testSuite.ManifestTest = {
       lifeStarTest.GET('/lively.appcache', function(res) {
         test.equals(200, res.statusCode);
         test.equals('no-cache, private', res.headers['cache-control']);
-        test.equals('text/cache-manifest', res.headers['content-type']);
+        test.ok(res.headers['content-type'].indexOf('text/cache-manifest') === 0, 'content-type header?');
         var expectedFirst = "CACHE MANIFEST\n"
                           + "# timestamp " + creationTime + "\n\n\n",
             // since find sorting can differ between OSes
