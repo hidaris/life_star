@@ -1,5 +1,6 @@
 /*global require, module*/
 var express = require('express'),
+    morgan = require('morgan'),
     LivelyFsHandler = require('lively-davfs/request-handler'),
     log4js = require('log4js'),
     proxy = require('./lib/proxy'),
@@ -110,17 +111,13 @@ var serverSetup = module.exports = function(config, thenDo) {
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   var logger = log4js.getLogger();
   logger.setLevel((config.logLevel || 'OFF').toUpperCase());
-  // FIXME either use log4js or default epxress logger..
-  express.logger.token('user', function(req, res) {
-      return (req.session && req.session.user) || 'unknown user';
-  });
-  express.logger.token('email', function(req, res) {
-      return (req.session && req.session.email) || '';
-  });
+  // FIXME either use log4js or default express logger..
+  morgan.token('user', function(req, res) { return (req.session && req.session.user) || 'unknown user'; });
+  morgan.token('email', function(req, res) {return (req.session && req.session.email) || ''; });
   // default format:
-  // ':remote-addr - - [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"'
-  var fmt = express.logger.default.replace('":method', '":user <:email>" ":method');
-  app.use(express.logger(fmt));
+  // ':remote-addr - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
+  morgan.lkFormat = morgan.combined.replace('":method', '":user <:email>" ":method');
+  app.use(morgan('lkFormat'));
 
   // -=-=-=-=-=-=-
   // Proxy routes
