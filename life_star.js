@@ -168,20 +168,19 @@ var serverSetup = module.exports = function(config, thenDo) {
   var dbConf = { // defaults
       enableVersioning: true,
       enableRewriting: true,
-      enableRewriteOnStart: false,
-      // Modules necessary modules for world load, the rest of the AST registry can be lazily be loaded from the server later
-      bootstrapRewriteFiles: [ // 'core/lib/lively-libs-debug.js',
+      // Modules necessary modules for world load, the rest is rewritten onLoad
+      bootstrapRewriteFiles: [ // 'core/lively/bootstrap.js', 'core/lib/lively-libs-debug.js', 'core/lib/escodegen.browser.js',
         'core/lively/Migration.js', 'core/lively/JSON.js', 'core/lively/lang/Object.js', 'core/lively/lang/Function.js', 'core/lively/lang/String.js',
         'core/lively/lang/Array.js', 'core/lively/lang/Number.js', 'core/lively/lang/Date.js', 'core/lively/lang/Worker.js', 'core/lively/lang/LocalStorage.js',
         'core/lively/defaultconfig.js', 'core/lively/Base.js', 'core/lively/ModuleSystem.js', 'core/lively/Traits.js', 'core/lively/DOMAbstraction.js',
-        'core/lively/IPad.js', 'core/lively/LogHelper.js', 'core/lively/lang/Closure.js', // bootstrap.js
-        'core/lively/bindings/Core.js', 'core/lively/persistence/Serializer.js', 'core/lively/Main.js', 'core/lively/net/WebSockets.js',
-        'core/cop/Layers.js', 'core/lively/OldModel.js', 'core/lively/Data.js', 'core/lively/Network.js',
-        // directly neccessary for debugging
-        'core/lively/ast/Debugging.js', 'core/lively/ast/AcornInterpreter.js', 'core/lively/ast/Rewriting.js', 'core/lively/ast/AstHelper.js',
-        'core/lively/ast/acorn.js',
-        // neccessary to be able to load everything else dynamically
-        'core/lively/store/Interface.js'
+        'core/lively/IPad.js', 'core/lively/LogHelper.js', 'core/lively/localconfig.js', // FIXME: + user configs ?
+        // bootstrap.js
+        'core/lively/lang/Closure.js',
+        'core/lively/bindings.js', 'core/lively/bindings/Core.js',
+        'core/lively/Main.js', 'core/lively/persistence/Serializer.js'
+        // directly neccessary for debugging BUT excluded for now:
+        // 'core/lively/ast/Debugging.js', 'core/lively/ast/AcornInterpreter.js', 'core/lively/ast/Rewriting.js', 'core/lively/ast/AstHelper.js',
+        // 'core/lively/ast/acorn.js', 'core/lively/ast/StackReification.js'
       ],
       fs: config.srvOptions.node,
       excludedDirectories: ['.svn', '.git', 'node_modules'],
