@@ -6,6 +6,7 @@ var express = require('express'),
     proxy = require('./lib/proxy'),
     testing = require('./lib/testing'),
     auth = require('./lib/auth'),
+    CourseAuthHandler = require('./lib/course-auth').CourseAuthHandler,
     SubserverHandler = require('./lib/subservers').SubserverHandler,
     ManifestHandler = require('./lib/manifest').ManifestHandler,
     util = require('util'),
@@ -105,6 +106,11 @@ var serverSetup = module.exports = function(config, thenDo) {
   if (config.behindProxy) {
     app.use(auth.extractApacheClientCertHeadersIntoSession);
   }
+
+  // -=-=-=-=-=-=-=-=-=-=-
+  // course auth handler
+  // -=-=-=-=-=-=-=-=-=-=-
+  new CourseAuthHandler({}).registerWith(app, server);
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   // set up logger, proxy and testing routes
