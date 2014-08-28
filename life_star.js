@@ -32,6 +32,7 @@ var serverSetup = module.exports = function(config, thenDo) {
   config.subserverDirectory  = config.subserverDirectory || __dirname  + "/subservers/";
   config.useManifestCaching  = config.useManifestCaching || false;
   config.cors                = config.hasOwnProperty("cors") ? config.cors : true;
+  config.authConf            = config.hasOwnProperty("authConf") ? config.authConf : {};
 
   app = express();
 
@@ -70,6 +71,7 @@ var serverSetup = module.exports = function(config, thenDo) {
   } else {
     server = require('http').createServer(app);
   }
+  server.config = config;
 
   // express specifically handles the case of sitting behind a proxy, see
   // http://expressjs.com/guide.html#proxies
@@ -108,18 +110,11 @@ var serverSetup = module.exports = function(config, thenDo) {
   }
 
   // -=-=-=-=-=-=-=-=-=-=-
-  // course auth handler
+  // auth handler
   // -=-=-=-=-=-=-=-=-=-=-
-  // -=-=-=-=-=--=-=-=-=-=--=-=-=-
-  // set up file system connection
-  // -=-=-=-=-=--=-=-=-=-=--=-=-=-
-  var authConf = {};
-  if (config.authConf) {
-      if (typeof config.authConf === 'string')
-          config.authConf = JSON.parse(config.authConf);
-      util._extend(authConf, config.authConf);
-  }
-  new AuthHandler(authConf).registerWith(app, server);
+  if (typeof config.authConf === 'string')
+    config.authConf = JSON.parse(config.authConf);
+  new AuthHandler(config.authConf).registerWith(app, server);
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   // set up logger, proxy and testing routes
