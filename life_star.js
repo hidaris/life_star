@@ -6,7 +6,7 @@ var express = require('express'),
     proxy = require('./lib/proxy'),
     testing = require('./lib/testing'),
     auth = require('./lib/auth'),
-    CourseAuthHandler = require('./lib/course-auth').CourseAuthHandler,
+    AuthHandler = require('life_star-auth').HTTPHandler,
     SubserverHandler = require('./lib/subservers').SubserverHandler,
     ManifestHandler = require('./lib/manifest').ManifestHandler,
     util = require('util'),
@@ -110,7 +110,16 @@ var serverSetup = module.exports = function(config, thenDo) {
   // -=-=-=-=-=-=-=-=-=-=-
   // course auth handler
   // -=-=-=-=-=-=-=-=-=-=-
-  new CourseAuthHandler({}).registerWith(app, server);
+  // -=-=-=-=-=--=-=-=-=-=--=-=-=-
+  // set up file system connection
+  // -=-=-=-=-=--=-=-=-=-=--=-=-=-
+  var authConf = {};
+  if (config.authConf) {
+      if (typeof config.authConf === 'string')
+          config.authConf = JSON.parse(config.authConf);
+      util._extend(authConf, config.authConf);
+  }
+  new AuthHandler(authConf).registerWith(app, server);
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   // set up logger, proxy and testing routes
