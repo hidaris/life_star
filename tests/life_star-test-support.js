@@ -96,13 +96,15 @@ function withResponseBodyDo(res, callback) {
   });
 }
 
-function request(method, path, data, callback) {
+function request(method, path, data, headers, callback) {
   if (typeof data === 'function' && !callback) { callback = data; data = null }
+  if (typeof headers === 'function' && !callback) { callback = headers; headers = null }
   var req = http.request({
     hostname: "localhost",
     port: 9999,
     path: path,
-    method: method
+    method: method,
+    headers: headers
   }, function(res) {
     var data = '';
     res.on('data', function(d) { data += d.toString(); });
