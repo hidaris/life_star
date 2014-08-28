@@ -107,7 +107,9 @@ function request(method, path, data, callback) {
     var data = '';
     res.on('data', function(d) { data += d.toString(); });
     res.on('end', function() { res.body = data; callback && callback(res); });
+    res.on("error", function(err) { console.error("life_star-test response error: ", err); });
   });
+  req.on("error", function(err) { console.error("life_star-test request error: ", err); });
   if (data) req.write(typeof data === 'object' ? JSON.stringify(data) : data);
   req.end();
   return req;

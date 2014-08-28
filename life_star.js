@@ -114,7 +114,7 @@ var serverSetup = module.exports = function(config, thenDo) {
   // -=-=-=-=-=-=-=-=-=-=-
   if (typeof config.authConf === 'string')
     config.authConf = JSON.parse(config.authConf);
-  new AuthHandler(config.authConf).registerWith(app, server);
+  server.authHandler = new AuthHandler(config.authConf).registerWith(app, server);
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   // set up logger, proxy and testing routes
@@ -212,9 +212,9 @@ var serverSetup = module.exports = function(config, thenDo) {
   // GO GO GO
   // -=-=-=-=-
   server.on('listening', function() {
-      console.log("life_star running");
-      serverSetup.emit('start', server);
-      if (thenDo) thenDo(null, server);
+    console.log("life_star running");
+    serverSetup.emit('start', server);
+    if (thenDo) thenDo(null, server);
   });
   server.on('close', function() { serverSetup.emit('close'); });
 
