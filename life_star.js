@@ -132,8 +132,7 @@ var serverSetup = module.exports = function(config, thenDo) {
     }
   }
   app.use(function(req,res,next) {
-    if (req.method === 'PUT' || req.method === 'POST')
-      installStreambuffer(req);
+    if (req.method === 'PUT') installStreambuffer(req);
     next();
   });
 
