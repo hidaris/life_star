@@ -91,16 +91,77 @@ var serverSetup = module.exports = function(config, thenDo) {
     });
   }
 
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  // dealing with request content
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  function installStreambuffer(req) {
+    // to learn about the rationale of this funny hack see
+    // https://github.com/LivelyKernel/node-lively-davfs/blob/7f8082bceaf7851b5152d672a98ca55c399b944d/jsDAV-plugin.js#L31
+
+    function invokeCb(cb, arg) {
+      try { cb.call(null, arg); } catch (e) {
+        console.log("life_star streambuffer callback error: ", e);
+      }
+    }
+
+    var done = false, data = null,
+      streamBufferDataHandlers = [],
+      streamBufferEndHandlers = [];
+
+    req.on("data", function(d) {
+      if (data) data = Buffer.concat([data, d]);
+      else data = d;
+      streamBufferDataHandlers.forEach(function(ea) { invokeCb(ea, d) });
+    });
+    req.on('end', function() {
+      done = true;
+      streamBufferEndHandlers.forEach(function(ea) { invokeCb(ea) });
+      streamBufferDataHandlers = [];
+      streamBufferEndHandlers = [];
+    });
+
+    req.streambuffer = {
+      ondata: function(cb) {
+          if (done)  invokeCb(cb, data);
+          else streamBufferDataHandlers.push(cb);
+      },
+      onend: function(cb) {
+          if (done) invokeCb(cb);
+          else streamBufferEndHandlers.push(cb);
+      }
+    }
+  }
+  app.use(function(req,res,next) {
+    if (req.method === 'PUT' || req.method === 'POST')
+      installStreambuffer(req);
+    next();
+  });
+
   app.use(express.bodyParser({limit: '150mb'}));
   app.use(express.cookieParser());
 
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   // store auth information into a cookie
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   app.use(express.cookieSession({
     key: 'livelykernel-sign-on',
     secret: 'foo',
     proxy: config.behindProxy,
     cookie: {path: '/', httpOnly: false, maxAge: null}
   }));
+
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+  // set up logger, proxy and testing routes
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+  var logger = log4js.getLogger();
+  logger.setLevel((config.logLevel || 'OFF').toUpperCase());
+  // FIXME either use log4js or default express logger..
+  morgan.token('user', function(req, res) { return (req.session && req.session.user) || 'unknown user'; });
+  morgan.token('email', function(req, res) {return (req.session && req.session.email) || ''; });
+  // default format:
+  // ':remote-addr - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
+  morgan.lkFormat = morgan.combined.replace('":method', '":user <:email>" ":method');
+  app.use(morgan('lkFormat'));
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-
   // deal with authentication
@@ -115,19 +176,6 @@ var serverSetup = module.exports = function(config, thenDo) {
   if (typeof config.authConf === 'string')
     config.authConf = JSON.parse(config.authConf);
   server.authHandler = new AuthHandler(config.authConf).registerWith(app, server);
-
-  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-  // set up logger, proxy and testing routes
-  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-  var logger = log4js.getLogger();
-  logger.setLevel((config.logLevel || 'OFF').toUpperCase());
-  // FIXME either use log4js or default express logger..
-  morgan.token('user', function(req, res) { return (req.session && req.session.user) || 'unknown user'; });
-  morgan.token('email', function(req, res) {return (req.session && req.session.email) || ''; });
-  // default format:
-  // ':remote-addr - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
-  morgan.lkFormat = morgan.combined.replace('":method', '":user <:email>" ":method');
-  app.use(morgan('lkFormat'));
 
   // -=-=-=-=-=-=-
   // Proxy routes
