@@ -104,30 +104,43 @@ var serverSetup = module.exports = function(config, thenDo) {
       }
     }
 
-    var done = false, data = null,
-      streamBufferDataHandlers = [],
-      streamBufferEndHandlers = [];
-
-    req.on("data", function(d) {
+    function dataHandler(d) {
       if (data) data = Buffer.concat([data, d]);
       else data = d;
       streamBufferDataHandlers.forEach(function(ea) { invokeCb(ea, d) });
-    });
-    req.on('end', function() {
+    }
+
+    function endHandler() {
       done = true;
       streamBufferEndHandlers.forEach(function(ea) { invokeCb(ea) });
       streamBufferDataHandlers = [];
       streamBufferEndHandlers = [];
-    });
+    }
+
+    var done = false, data = null,
+      streamBufferDataHandlers = [],
+      streamBufferEndHandlers = [];
+
+    if (req.streambuffer) {
+      var origStreambuffer = req.streambuffer;
+      origStreambuffer.ondata(dataHandler);
+      origStreambuffer.onend(endHandler);
+    } else {
+      req.on("data", dataHandler);
+      req.on('end', endHandler);
+    }
 
     req.streambuffer = {
       ondata: function(cb) {
-          if (done)  invokeCb(cb, data);
-          else streamBufferDataHandlers.push(cb);
+        if (done) invokeCb(cb, data);
+        else {
+          if (data) invokeCb(cb, data);
+          streamBufferDataHandlers.push(cb);
+        }
       },
       onend: function(cb) {
-          if (done) invokeCb(cb);
-          else streamBufferEndHandlers.push(cb);
+        if (done) invokeCb(cb);
+        else streamBufferEndHandlers.push(cb);
       }
     }
   }
