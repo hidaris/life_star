@@ -154,13 +154,17 @@ var serverSetup = module.exports = function(config, thenDo) {
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   var logger = log4js.getLogger();
   logger.setLevel((config.logLevel || 'OFF').toUpperCase());
-  // FIXME either use log4js or default express logger..
-  morgan.token('user', function(req, res) { return (req.session && req.session.user) || 'unknown user'; });
-  morgan.token('email', function(req, res) {return (req.session && req.session.email) || ''; });
+  morgan.token('user', function(req, res) { return (req.session && req.session["lvUserData_2013-10-12"] && req.session["lvUserData_2013-10-12"].username) || 'unknown user'; });
+  morgan.token('email', function(req, res) { return (req.session && req.session["lvUserData_2013-10-12"] && req.session["lvUserData_2013-10-12"].email) || ''; });
   // default format:
   // ':remote-addr - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
   morgan.lkFormat = morgan.combined.replace('":method', '":user <:email>" ":method');
-  app.use(morgan('lkFormat'));
+  app.use(morgan('lkFormat',{
+    skip: function (req, res) {
+      return req.url.indexOf("/nodejs/LogServer") === 0
+          || req.url.indexOf("/nodejs/ObjectRepositoryServer/?getRecords") === 0;
+    }
+  }));
 
   // -=-=-=-=-=-=-=-=-=-=-=-=-
   // deal with authentication
