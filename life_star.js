@@ -175,7 +175,8 @@ var serverSetup = module.exports = function(config, thenDo) {
   app.use(morgan('lkFormat',{
     skip: function (req, res) {
       return req.url.indexOf("/nodejs/LogServer") === 0
-          || req.url.indexOf("/nodejs/ObjectRepositoryServer/?getRecords") === 0;
+          || req.url.indexOf("/nodejs/ObjectRepositoryServer/?getRecords") === 0
+          || req.url.indexOf("/uvic-login?redirect=") === 0;
     }
   }));
 
