@@ -1,6 +1,6 @@
 {
   "name": "life_star",
-  "version": "0.6.7",
+  "version": "0.7.0",
   "author": "Fabian Bornhofen <fbornhofen@gmail.com>",
   "contributors": [
     "Robert Krahn <robert.krahn@gmail.com>",
@@ -8,9 +8,9 @@
   ],
   "description": "Another web server for Lively",
   "dependencies": {
-    "async": "~0.2",
+    "async": "~0.9",
     "express": "~3",
-    "lively-davfs": ">=0.2.8",
+    "lively-davfs": ">=0.3.0",
     "log4js": "0.4.1",
     "morgan": ">=1.2.0",
     "request": "~2.2",
