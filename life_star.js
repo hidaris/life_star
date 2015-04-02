@@ -37,7 +37,7 @@ var serverSetup = module.exports = function(config, thenDo) {
 
   var app = express(), server, logger;
 
-  lively.lang.fun.composeAsync(
+  lang.fun.composeAsync(
     extendServerSetupFunction,
     createServer,
     setupBehindProxy,
@@ -58,7 +58,7 @@ var serverSetup = module.exports = function(config, thenDo) {
     if (err) {
       console.error("Error starting life_star: %s", err);
     }
-    thenDo(err, server);
+    thenDo && thenDo(err, server);
   });
 
   return server;
@@ -79,9 +79,9 @@ var serverSetup = module.exports = function(config, thenDo) {
 
   function createNodejsLivelyInterface(next) {
     // some helpers, mainly for interactive usage
-    if (typeof lively === "undefined") global.lively = {};
-    global.lv = global.lively;
-    util._extend(lively, {
+    if (typeof global.lively === "undefined") global.lively = {};
+    var lv = global.lv = global.lively;
+    util._extend(lv, {
       server: {
         dir: __dirname,
         get lifeStar() { return server; },
@@ -360,7 +360,7 @@ var serverSetup = module.exports = function(config, thenDo) {
         util._extend(dbConf, config.dbConf);
     }
     var fsHandler = new LivelyFsHandler(dbConf).registerWith(app, server);
-    lively.server.repository = fsHandler.repository;
+    global.lively.server.repository = fsHandler.repository;
     app.all(/.*/, fsHandler.handleRequest.bind(fsHandler));
     next();
   }
