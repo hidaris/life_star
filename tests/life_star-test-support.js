@@ -10,24 +10,22 @@ var lifeStar = require("./../life_star"),
     server;
 
 function withLifeStarDo(test, func, options) {
-  if (server) test.assert(false, 'life_star already running!')
+  if (server) throw new Error('life_star already running!');
   options = util._extend(options || {}, {dbConf: {enableVersioning: false, enableRewriting: false}});
   options.host = options.host || 'localhost';
   options.port = options.port || 9999;
-  server = lifeStar(options);
+  server = lifeStar(options, function(err, server) { func(server); });
   server.on('error', function(e) {
     test.ifError(e);
     test.done();
   });
-  setTimeout(function() { func(server) }, 500);
 }
 
 function shutDownLifeStar(thenDo) {
   if (!server) {
     thenDo();
   } else {
-    console.log('shuting down server...');
-    debugger;
+    console.log('shutting down server...');
     server.close(function() { console.log('... done'); server = null; thenDo(); });
   }
 }

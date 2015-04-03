@@ -7,7 +7,6 @@ var lang             = require('lively.lang'),
     proxy            = require('./lib/proxy'),
     testing          = require('./lib/testing'),
     auth             = require('./lib/auth'),
-    AuthHandler      = require('life_star-auth').HTTPHandler,
     SubserverHandler = require('./lib/subservers').SubserverHandler,
     ManifestHandler  = require('./lib/manifest').ManifestHandler,
     lfUtil           = require('./lib/util'),
@@ -37,9 +36,12 @@ var serverSetup = module.exports = function(config, thenDo) {
 
   var app = express(), server, logger;
 
+  thenDo = lang.fun.once(thenDo || function() {});
+
   lang.fun.composeAsync(
     extendServerSetupFunction,
     createServer,
+    createNodejsLivelyInterface,
     setupBehindProxy,
     setupCORS,
     setupStreamBuffers,
@@ -57,8 +59,10 @@ var serverSetup = module.exports = function(config, thenDo) {
   )(function(err) {
     if (err) {
       console.error("Error starting life_star: %s", err);
+      thenDo(err);
+    } else {
+      server.once('listening', function() { thenDo(err, server); });
     }
-    thenDo && thenDo(err, server);
   });
 
   return server;
@@ -265,8 +269,12 @@ var serverSetup = module.exports = function(config, thenDo) {
     if (!config.authConf || !config.authConf.enabled) next();
     else {
       lfUtil.npmInstall("life_star-auth", __dirname, function(err) {
-        server.authHandler = new AuthHandler(config.authConf).registerWith(app, server);
-        next(err);
+        if (err) next(err);
+        else {
+          var AuthHandler = require('life_star-auth').HTTPHandler;
+          server.authHandler = new AuthHandler(config.authConf).registerWith(app, server);
+          next();
+        }
       });
     }
   }
@@ -372,7 +380,6 @@ var serverSetup = module.exports = function(config, thenDo) {
     server.on('listening', function() {
       console.log("life_star running");
       serverSetup.emit('start', server);
-      if (thenDo) thenDo(null, server);
     });
     server.on('close', function() { serverSetup.emit('close'); });
   
