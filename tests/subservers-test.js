@@ -27,8 +27,8 @@ testSuite.SubserverTest = {
   },
 
   tearDown: function(run) {
-    lifeStarTest.cleanupTempFiles(function() {
-      lifeStarTest.shutDownLifeStar(run);
+    lifeStarTest.shutDownLifeStar(function() {
+      lifeStarTest.cleanupTempFiles(function() { run(); });
     });
   },
 
