@@ -383,7 +383,7 @@ var serverSetup = module.exports = function(config, thenDo) {
     });
     server.on('close', function() { serverSetup.emit('close'); });
   
-    server.listen(config.port);
+    server.listen(config.port, config.host);
     next();
   }
 
