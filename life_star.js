@@ -32,7 +32,6 @@ var serverSetup = module.exports = function(config, thenDo) {
   config.subserverDirectory  = config.subserverDirectory || __dirname  + "/subservers/";
   config.useManifestCaching  = config.useManifestCaching || false;
   config.cors                = config.hasOwnProperty("cors") ? config.cors : true;
-  config.authConf            = config.hasOwnProperty("authConf") ? config.authConf : {};
 
   var app = express(), server, logger;
 
@@ -264,15 +263,22 @@ var serverSetup = module.exports = function(config, thenDo) {
     // -=-=-=-=-=-=-=-=-=-=-
     // auth handler
     // -=-=-=-=-=-=-=-=-=-=-
-    if (typeof config.authConf === 'string')
-      config.authConf = JSON.parse(config.authConf);
-    if (!config.authConf || !config.authConf.enabled) next();
+    if (!lively.Config || !lively.Config.get('userAuthEnabled')) next();
     else {
+      // FIXME: map between config.json and life-star_auth
+      var authConfig = {
+            enabled:            lively.Config.get('userAuthEnabled', true),
+            cookieField:        lively.Config.get('cookieField', true),
+            usersFile:          lively.Config.get('usersFile', true),
+            usersDefaultWorld:  lively.Config.get('usersDefaultWorld', true),
+            paths:              lively.Config.get('authPaths', true)
+          };
+      // TODO: for dev purpose: do not reinstall the package every time again!
       lfUtil.npmInstall("life_star-auth", __dirname, function(err) {
         if (err) next(err);
         else {
           var AuthHandler = require('life_star-auth').HTTPHandler;
-          server.authHandler = new AuthHandler(config.authConf).registerWith(app, server);
+          server.authHandler = new AuthHandler(authConfig).registerWith(app, server);
           next();
         }
       });
