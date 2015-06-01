@@ -269,10 +269,11 @@ var serverSetup = module.exports = function(config, thenDo) {
       var authConfig = {
             enabled:            lively.Config.get('userAuthEnabled', true),
             cookieField:        lively.Config.get('cookieField', true),
-            usersFile:          lively.Config.get('usersFile', true),
             usersDefaultWorld:  lively.Config.get('usersDefaultWorld', true),
             paths:              lively.Config.get('authPaths', true)
           };
+      if (lively.Config.get('usersFile', true) != null)
+        authConfig.usersFile = lively.Config.get('usersFile');
       // TODO: for dev purpose: do not reinstall the package every time again!
       lfUtil.npmInstall("life_star-auth", __dirname, function(err) {
         if (err) next(err);
