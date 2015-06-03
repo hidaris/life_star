@@ -350,8 +350,11 @@ var serverSetup = module.exports = function(config, thenDo) {
         enableRewriting: true,
         // Modules necessary modules for world load, the rest is rewritten onLoad
         bootstrapRewriteFiles: [ // 'core/lively/bootstrap.js', 'core/lib/lively-libs-debug.js', 'core/lib/escodegen.browser.js',
-          'core/lively/Migration.js', 'core/lively/JSON.js', 'core/lively/lang/Object.js', 'core/lively/lang/Function.js', 'core/lively/lang/String.js',
-          'core/lively/lang/Array.js', 'core/lively/lang/Number.js', 'core/lively/lang/Date.js', 'core/lively/lang/Worker.js', 'core/lively/lang/LocalStorage.js',
+          'core/lively/Migration.js', 'core/lively/JSON.js', 'core/lively/lang/LocalStorage.js',
+          'node_modules/lively.lang/lib/base.js', 'node_modules/lively.lang/lib/events.js', 'node_modules/lively.lang/lib/object.js',
+          'node_modules/lively.lang/lib/collection.js', 'node_modules/lively.lang/lib/tree.js', 'node_modules/lively.lang/lib/function.js',
+          'node_modules/lively.lang/lib/string.js', 'node_modules/lively.lang/lib/number.js', 'node_modules/lively.lang/lib/date.js',
+          'node_modules/lively.lang/lib/class.js', 'node_modules/lively.lang/lib/messenger.js', 'node_modules/lively.lang/lib/worker.js',
           'core/lively/defaultconfig.js', 'core/lively/Base.js', 'core/lively/ModuleSystem.js', 'core/lively/Traits.js', 'core/lively/DOMAbstraction.js',
           'core/lively/IPad.js', 'core/lively/LogHelper.js', 'core/lively/localconfig.js', // FIXME: + user configs ?
           // bootstrap.js
@@ -363,7 +366,7 @@ var serverSetup = module.exports = function(config, thenDo) {
           // 'core/lively/ast/acorn.js', 'core/lively/ast/StackReification.js'
         ],
         fs: config.srvOptions.node,
-        excludedDirectories: ['.svn', '.git', 'node_modules'],
+        excludedDirectories: ['.svn', '.git', /node_modules\/(?!lively\.lang)/],
         excludedFiles: [/.*\.sqlite/, /.*\.gz/, '.DS_Store', 'combined.js'],
         includedFiles: [/\.(cmd|conf|css|diff|el|html|ini|js|json|md|mdown|metainfo|patch|r|snippets|st|txt|xhtml|xml|yml)$/i],
         dbFile: path.join(config.fsNode || '', "objects.sqlite"),
