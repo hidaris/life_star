@@ -263,23 +263,27 @@ var serverSetup = module.exports = function(config, thenDo) {
     // -=-=-=-=-=-=-=-=-=-=-
     // auth handler
     // -=-=-=-=-=-=-=-=-=-=-
-    if (!lively.Config || !lively.Config.get('userAuthEnabled')) next();
-    else {
-      // FIXME: map between config.json and life-star_auth
-      var authConfig = {
-            enabled:            lively.Config.get('userAuthEnabled', true),
-            cookieField:        lively.Config.get('cookieField', true),
-            usersDefaultWorld:  lively.Config.get('usersDefaultWorld', true),
-            paths:              lively.Config.get('authPaths', true)
-          };
+
+    // FIXME: better mapping of auth conf / lively conf / server conf!!!
+    var authConf = {};
+    if (lively.Config) {
+      authConf.enabled =            lively.Config.get('userAuthEnabled', true),
+      authConf.cookieField =        lively.Config.get('cookieField', true),
+      authConf.usersDefaultWorld =  lively.Config.get('usersDefaultWorld', true),
+      authConf.paths =              lively.Config.get('authPaths', true)
       if (lively.Config.get('usersFile', true) != null)
-        authConfig.usersFile = lively.Config.get('usersFile');
+        authConf.usersFile = lively.Config.get('usersFile');
+    }
+    authConf = lang.obj.merge(config.authConf, authConf);
+
+    if (!authConf.enabled) next();
+    else {
       // TODO: for dev purpose: do not reinstall the package every time again!
       lfUtil.npmInstall("life_star-auth", __dirname, function(err) {
         if (err) next(err);
         else {
           var AuthHandler = require('life_star-auth').HTTPHandler;
-          server.authHandler = new AuthHandler(authConfig).registerWith(app, server);
+          server.authHandler = new AuthHandler(authConf).registerWith(app, server);
           next();
         }
       });
