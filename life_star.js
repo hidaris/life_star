@@ -371,6 +371,7 @@ var serverSetup = module.exports = function(config, thenDo) {
         ],
         fs: config.srvOptions.node,
         excludedDirectories: ['.svn', '.git', /node_modules\/(?!lively\.lang)/],
+        excludedDirectories: ['.svn', '.git', /node_modules\/(?!lively\.)/, '.optimized-loading-cache'],
         excludedFiles: [/.*\.sqlite/, /.*\.gz/, '.DS_Store', 'combined.js'],
         includedFiles: [/\.(cmd|conf|css|diff|el|html|ini|js|json|md|mdown|metainfo|patch|r|snippets|st|txt|xhtml|xml|yml)$/i],
         dbFile: path.join(config.fsNode || '', "objects.sqlite"),
