@@ -351,7 +351,7 @@ var serverSetup = module.exports = function(config, thenDo) {
     // -=-=-=-=-=--=-=-=-=-=--=-=-=-
     var dbConf = { // defaults
         enableVersioning: true,
-        enableRewriting: true,
+        enableRewriting: false,
         // Modules necessary modules for world load, the rest is rewritten onLoad
         bootstrapRewriteFiles: [ // 'core/lively/bootstrap.js', 'core/lib/lively-libs-debug.js', 'core/lib/escodegen.browser.js',
           'core/lively/Migration.js', 'core/lively/JSON.js', 'core/lively/lang/LocalStorage.js',
@@ -370,7 +370,6 @@ var serverSetup = module.exports = function(config, thenDo) {
           // 'core/lively/ast/acorn.js', 'core/lively/ast/StackReification.js'
         ],
         fs: config.srvOptions.node,
-        excludedDirectories: ['.svn', '.git', /node_modules\/(?!lively\.lang)/],
         excludedDirectories: ['.svn', '.git', /node_modules\/(?!lively\.)/, '.optimized-loading-cache'],
         excludedFiles: [/.*\.sqlite/, /.*\.gz/, '.DS_Store', 'combined.js'],
         includedFiles: [/\.(cmd|conf|css|diff|el|html|ini|js|json|md|mdown|metainfo|patch|r|snippets|st|txt|xhtml|xml|yml)$/i],
