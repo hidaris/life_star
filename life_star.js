@@ -267,10 +267,11 @@ var serverSetup = module.exports = function(config, thenDo) {
     // FIXME: better mapping of auth conf / lively conf / server conf!!!
     var authConf = {};
     if (lively.Config) {
-      authConf.enabled =            lively.Config.get('userAuthEnabled', true),
-      authConf.cookieField =        lively.Config.get('cookieField', true),
-      authConf.usersDefaultWorld =  lively.Config.get('usersDefaultWorld', true),
-      authConf.paths =              lively.Config.get('authPaths', true)
+      authConf.enabled =            lively.Config.get('userAuthEnabled', true);
+      authConf.cookieField =        lively.Config.get('cookieField', true);
+      authConf.usersDefaultWorld =  lively.Config.get('usersDefaultWorld', true);
+      authConf.paths =              lively.Config.get('authPaths', true);
+      authConf.requireLogin =       lively.Config.get('authRequireLogin', true);
       if (lively.Config.get('usersFile', true) != null)
         authConf.usersFile = lively.Config.get('usersFile');
     }
