@@ -1,6 +1,6 @@
 {
   "name": "life_star",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "author": "Fabian Bornhofen <fbornhofen@gmail.com>",
   "contributors": [
     "Robert Krahn <robert.krahn@gmail.com>",
@@ -14,7 +14,7 @@
     "log4js": "0.4.1",
     "morgan": ">=1.2.0",
     "request": "~2.2",
-    "lively.lang": ">=0.4"
+    "lively.lang": "^0.7"
   },
   "devDependencies": {
     "nodeunit": ""
