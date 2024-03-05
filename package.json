@@ -10,7 +10,7 @@
   "dependencies": {
     "async": "~0.9",
     "express": "~3",
-    "lively-davfs": "^0.4.4",
+    "lively-davfs": "git+https://github.com/hidaris/node-lively-davfs",
     "log4js": "0.4.1",
     "morgan": ">=1.2.0",
     "request": "~2.2",
